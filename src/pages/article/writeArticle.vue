@@ -24,8 +24,8 @@
                 <i class="el-icon-setting el-icon--right" style="color: white"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="del">删除</el-dropdown-item>
-                <el-dropdown-item command="edit">狮子头</el-dropdown-item>
+                <el-dropdown-item command="del"><i class="el-icon-delete"></i>删除</el-dropdown-item>
+                <el-dropdown-item command="edit"><i class="el-icon-edit-outline"></i>修改</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </div>
@@ -33,7 +33,35 @@
       </ul>
 
     </div>
-    <div class="article_list"></div>
+    <div class="articles">
+      <div class="addArticle">
+        <i class="el-icon-circle-plus"></i>新增文章
+      </div>
+      <ul class="article_list">
+        <li :class="info.selected?'selected':''" v-for="info in articleList">
+          <div class="right">
+            <i class="el-icon-circle-check-outline"></i>
+          </div>
+
+          <div class="left">
+            <div class="title">{{info.title}}</div>
+            <div class="content">{{info.content}}</div>
+            <div class="number">字数:{{info.article_num}}</div>
+          </div>
+          <div class="right">
+            <el-dropdown trigger="click" @command="typeSetting">
+              <span class="el-dropdown-link">
+                <i class="el-icon-setting el-icon--right" style="color: black;font-size: 1.8rem"></i>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="del"><i class="el-icon-delete"></i>删除</el-dropdown-item>
+                <el-dropdown-item command="edit"><i class="el-icon-edit-outline"></i>修改</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
+        </li>
+      </ul>
+    </div>
     <div class="article_edit"></div>
     <!--<d2-container type="full" class="page">-->
     <!--<articleForm>-->
@@ -45,8 +73,7 @@
 
 <script>
   import articleForm from '@/components/articleForm'
-  import {Message} from 'element-ui'
-  import index from "../../store";
+  import {Message, MessageBox} from 'element-ui'
 
   export default {
     components: {
@@ -54,11 +81,13 @@
     },
     data() {
       return {
-        visible2:false,
+        visible2: false,
         isDraft: false,
         newShow: false,
         typeList: [],
         typeName: '',
+        checkTypeInfo: {},
+        articleList: [],
       }
     },
     created() {
@@ -67,27 +96,77 @@
     computed: {},
     methods: {
       typeSetting(command) {
-        if (command === 'logout') {
-          alert(command)
+        if (command === 'del') {
+          MessageBox.confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+            center: true
+          }).then(() => {
+            this.$axios.post('delType', {id: this.checkTypeInfo.id}).then(res => {
+              this.typeList = this.typeList.filter(element => {
+                return element.id != res.id;
+              });
+              if (this.typeList.length > 0) {
+                this.typeList[0].selected = true;
+              }
+
+              Message({
+                type: 'success',
+                message: '删除成功!'
+              });
+            }).catch(err => {
+            })
+
+          }).catch(() => {
+          });
+
+        } else {
+          MessageBox.prompt('请输入文集名称', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            inputPattern: /\S/,
+            inputErrorMessage: '文集名称不能为空'
+          }).then(({value}) => {
+            this.$axios.post('updateType', {id: this.checkTypeInfo.id, typeName: value}).then(res => {
+              this.typeList = this.typeList.map(element => {
+                if (element.id == res.id) {
+                  res.selected = true
+                  return res;
+                }
+                return element;
+              });
+
+              Message({
+                type: 'success',
+                message: '修改成功!'
+              });
+            }).catch(err => {
+            })
+          }).catch(() => {
+          });
         }
       },
       typeSelected(info) {
+        this.checkTypeInfo = info;
         for (let info of this.typeList) {
           info.selected = false
         }
         info.selected = true
+        this.getArticleListByTypes(this.checkTypeInfo.id)
       },
       getTypeList() {
         this.$axios.get('getListByUserId').then(res => {
-          for (let index in res.rows) {
-            let info = res.rows[index];
-            if (index == 0) {
+          this.typeList = res.rows.map((info,index)=>{
+            if (index === 0) {
               info.selected = true
+              this.getArticleListByTypes(info.id)
             } else {
               info.selected = false
             }
-            this.typeList.push(info)
-          }
+            return info
+          })
+        }).catch(err => {
         })
       },
       addType() {
@@ -104,11 +183,35 @@
 
         })
       },
+      getArticleListByTypes(type_id) {
+        this.$axios.get('getArticleListByTypes', {params: {type_id: type_id}}).then(res => {
+          this.articleList = res.rows.map((info,index)=>{
+            if(index === 0){
+              info.selected = true;
+            }else{
+              info.selected = false;
+            }
+            return info;
+          })
+        }).catch(err => {
+
+        })
+      },
     }
   }
 </script>
 
 <style scoped>
+  * {
+    moz-user-select: -moz-none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
   .article {
     display: flex;
     height: 100%;
@@ -248,10 +351,12 @@
     padding: 10px 12px;
     display: flex;
   }
+
   .type_list li .left {
     flex: 1;
   }
-  .type_list li .right i{
+
+  .type_list li .right i {
     padding: 0 10px;
   }
 
@@ -284,10 +389,62 @@
     background: #404040;
   }
 
-  .article_list {
+  .articles {
     flex: 3;
     height: 100%;
+    width: 100%;
     border-right: 1px solid #d9d9d9;
+  }
+
+  .addArticle {
+    cursor: pointer;
+    width: 100%;
+    padding: 20px;
+    border-bottom: 1px solid #d9d9d9;
+  }
+  .article_list {
+    width: 100%;
+    display: block;
+  }
+  .article_list li {
+    cursor: pointer;
+    font-size: 1.5rem;
+    box-sizing: border-box;
+    display: flex;
+    height: 80px;
+    border-bottom: 1px solid #d9d9d9;
+  }
+
+  .article_list li .left {
+    padding-left: 10px;
+    flex: 1;
+  }
+  .article_list li .title{
+    margin-top: 10px;
+    font-weight: 600;
+    font-size: 1.8rem;
+  }
+  .article_list li .content{
+    margin-top: 5px;
+    font-weight: 500;
+    font-size: 1.4rem;
+  }
+  .article_list li .number{
+    margin-top: 5px;
+    font-weight: 500;
+    font-size: 1.1rem;
+  }
+  .article_list li .right{
+    padding: 30px 10px 0 10px;
+  }
+
+  .article_list li:hover {
+    background: #e6e6e6;
+  }
+
+  .article_list .selected {
+    background: #e6e6e6;
+    border-left: 3px solid #ec7259;
   }
 
   .article_edit {

@@ -51,6 +51,9 @@ export default {
 
   @import '../static/style.css';
   @import '../static/index.css';
+  * {
+    list-style: none;
+  }
   html,body{
     height: 100%;
     padding: 0;

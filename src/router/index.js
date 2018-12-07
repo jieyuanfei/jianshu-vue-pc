@@ -32,6 +32,9 @@ const router = new Router({
     },
     {
       path:'/writeArticle',
+      mate:{
+        requireAuth: true
+      },
       component:WriteArticle
     },
     {

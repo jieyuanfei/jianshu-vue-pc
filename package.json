@@ -10,8 +10,12 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "axios": "^0.18.0",
+    "element-ui": "^2.4.11",
+    "js-cookie": "^2.2.0",
     "mavon-editor": "^2.6.17",
     "qiniu-js": "^2.5.3",
+    "screenfull": "^3.3.3",
     "vue": "^2.5.2",
     "vue-resource": "^1.5.1",
     "vue-router": "^3.0.1",

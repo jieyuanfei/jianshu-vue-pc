@@ -25,10 +25,12 @@ axios.interceptors.request.use(function (config) {
 // 在这里添加你自己的逻辑
 axios.interceptors.response.use(res => {
   loading.close()
-  console.log(res)
+  // console.log(res)
   if(res.data.success){
     if(res.data.code === 0){
       return Promise.resolve(res.data.data)
+    }else if(res.data.code === 401){
+      return Promise.reject(res.data)
     }else{
       return Promise.reject(res.data)
     }
