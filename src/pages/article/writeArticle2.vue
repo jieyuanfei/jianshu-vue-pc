@@ -54,14 +54,21 @@
                 <i class="el-icon-setting el-icon--right" style="color: black;font-size: 1.8rem"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="ok"><i class="el-icon-check" ></i>已发布</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-goods" ></i>设为私密</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-time" ></i>历史版本</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-view" ></i>全屏打开</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-share" ></i>分享文章</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-document" ></i>移动文章</el-dropdown-item>
-                <el-dropdown-item command="del"><i class="el-icon-delete"></i>删除文章</el-dropdown-item>
+                <el-dropdown-item command="del"><span><i class="el-icon-delete"></i>删除</span></el-dropdown-item>
+                <el-dropdown-item command="edit">
 
+                  <el-popover
+                    placement="right"
+                    width="200"
+                    trigger="hover">
+                    <div @click="test" style="border: 1px solid red">标题1</div>
+                    <div>标题1</div>
+                    <div>标题1</div>
+                    <div>标题1</div>
+                    <span slot="reference"><i class="el-icon-edit-outline" ></i>修改</span>
+                  </el-popover>
+
+                </el-dropdown-item>
 
               </el-dropdown-menu>
             </el-dropdown>
@@ -69,19 +76,11 @@
         </li>
       </ul>
     </div>
-    <div class="article_edit">
-      <!--<mavon-editor-->
-        <!--id="mark"-->
-        <!--ref="md"-->
-        <!--codeStyle="atom-one-dark"-->
-        <!--defaultOpen="edit"-->
-        <!--class="mark-editor"/>-->
-      <d2-container type="full" class="page">
-      <articleForm>
-      </articleForm>
-      </d2-container>
-    </div>
-
+    <div class="article_edit"></div>
+    <!--<d2-container type="full" class="page">-->
+    <!--<articleForm>-->
+    <!--</articleForm>-->
+    <!--</d2-container>-->
   </div>
 
 </template>
@@ -111,6 +110,7 @@
     },
     computed: {},
     methods: {
+      test() {alert(1)},
       addArticle() {
         if(this.checkTypeInfo.id){
           this.$axios.post('addArticleByTypeId',{type_id: this.checkTypeInfo.id}).then(res=>{
@@ -516,8 +516,8 @@
     background: #e6e6e6;
     border-left: 3px solid #ec7259;
   }
-  .el-dropdown-menu__item i{
-    margin-right: 6px;
+  .el-dropdown-menu__item{
+    padding: 0 15px !important;
   }
 
   .article_edit {
