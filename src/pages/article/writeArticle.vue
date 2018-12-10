@@ -43,9 +43,9 @@
             <i :class="info.status === 0 ?'el-icon-circle-check-outline':'el-icon-document'"></i>
           </div>
 
-          <div class="left">
+          <div class="left" >
             <div class="title">{{info.title}}</div>
-            <div class="content">{{info.content}}</div>
+            <div class="content">{{info.text}}</div>
             <div class="number">字数:{{info.article_num}}</div>
           </div>
           <div class="right">
@@ -54,12 +54,12 @@
                 <i class="el-icon-setting el-icon--right" style="color: black;font-size: 1.8rem"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="ok"><i class="el-icon-check" ></i>已发布</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-goods" ></i>设为私密</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-time" ></i>历史版本</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-view" ></i>全屏打开</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-share" ></i>分享文章</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-document" ></i>移动文章</el-dropdown-item>
+                <el-dropdown-item command="ok"><i class="el-icon-check"></i>已发布</el-dropdown-item>
+                <el-dropdown-item command="edit"><i class="el-icon-goods"></i>设为私密</el-dropdown-item>
+                <el-dropdown-item command="edit"><i class="el-icon-time"></i>历史版本</el-dropdown-item>
+                <el-dropdown-item command="edit"><i class="el-icon-view"></i>全屏打开</el-dropdown-item>
+                <el-dropdown-item command="edit"><i class="el-icon-share"></i>分享文章</el-dropdown-item>
+                <el-dropdown-item command="edit"><i class="el-icon-document"></i>移动文章</el-dropdown-item>
                 <el-dropdown-item command="del"><i class="el-icon-delete"></i>删除文章</el-dropdown-item>
 
 
@@ -70,16 +70,8 @@
       </ul>
     </div>
     <div class="article_edit">
-      <!--<mavon-editor-->
-        <!--id="mark"-->
-        <!--ref="md"-->
-        <!--codeStyle="atom-one-dark"-->
-        <!--defaultOpen="edit"-->
-        <!--class="mark-editor"/>-->
-      <d2-container type="full" class="page">
       <articleForm>
       </articleForm>
-      </d2-container>
     </div>
 
   </div>
@@ -89,6 +81,7 @@
 <script>
   import articleForm from '@/components/articleForm'
   import {Message, MessageBox} from 'element-ui'
+  import {mapState} from 'vuex'
 
   export default {
     components: {
@@ -109,23 +102,28 @@
     created() {
       this.getTypeList();
     },
-    computed: {},
+    computed: {
+      ...mapState({
+        articles: state => state.Article.updateArticle
+      })
+    },
     methods: {
       addArticle() {
-        if(this.checkTypeInfo.id){
-          this.$axios.post('addArticleByTypeId',{type_id: this.checkTypeInfo.id}).then(res=>{
-            this.articleList = this.articleList.map(info=>{
+        if (this.checkTypeInfo.id) {
+          this.$axios.post('addArticleByTypeId', {type_id: this.checkTypeInfo.id}).then(res => {
+            this.articleList = this.articleList.map(info => {
               info.selected = false
               return info
             })
             res.data.selected = true
             this.articleList.unshift(res.data)
-          }).catch(err=>{})
+          }).catch(err => {
+          })
         }
       },
       articleSetting(command) {
         if (command === 'del') {
-          MessageBox.confirm('此操作将 "'+this.checkArticleInfo.title+'" 文章永久删除该文件, 是否继续?', '提示', {
+          MessageBox.confirm('此操作将 "' + this.checkArticleInfo.title + '" 文章永久删除该文件, 是否继续?', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning',
@@ -155,10 +153,10 @@
       },
       articleSelected(data) {
         this.checkArticleInfo = data;
-        this.articleList = this.articleList.map(info=>{
-          if(info.id === data.id){
+        this.articleList = this.articleList.map(info => {
+          if (info.id === data.id) {
             info.selected = true;
-          }else{
+          } else {
             info.selected = false;
           }
           return info;
@@ -166,7 +164,7 @@
       },
       typeSetting(command) {
         if (command === 'del') {
-          MessageBox.confirm('此操作将 "'+this.checkTypeInfo.type_name+'" 文集永久删除该文件, 是否继续?', '提示', {
+          MessageBox.confirm('此操作将 "' + this.checkTypeInfo.type_name + '" 文集永久删除该文件, 是否继续?', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning',
@@ -226,7 +224,7 @@
       },
       getTypeList() {
         this.$axios.get('getListByUserId').then(res => {
-          this.typeList = res.rows.map((info,index)=>{
+          this.typeList = res.rows.map((info, index) => {
             if (index === 0) {
               info.selected = true
               this.checkTypeInfo = info
@@ -255,11 +253,21 @@
       },
       getArticleListByTypes(type_id) {
         this.$axios.get('getArticleListByTypes', {params: {type_id: type_id}}).then(res => {
-          this.articleList = res.rows.map((info,index)=>{
-            if(index === 0){
-              info.selected = true;
+          this.articleList = res.rows.map((info, index) => {
+            if(this.articles.id){
+              if(this.articles.id === info.id){
+                info.selected = true;
+                this.checkArticleInfo = info;
+              }else{
+                info.selected = false;
+              }
             }else{
-              info.selected = false;
+              if (index === 0) {
+                info.selected = true;
+                this.checkArticleInfo = info;
+              } else {
+                info.selected = false;
+              }
             }
             return info;
           })
@@ -267,6 +275,23 @@
 
         })
       },
+    },
+    watch: {
+      checkArticleInfo:function (curVal, oldVal) {
+        this.$store.dispatch('getArticle',  JSON.parse(JSON.stringify(curVal)))
+      },
+      articles:function (curVal, oldVal) {
+        this.getArticleListByTypes(this.checkTypeInfo.id)
+      }
+
+    },
+    filters: {
+      contentFilters: function (value) {
+        if(value.length>40){
+          return value.substring(0,40);
+        }
+        return value
+      }
     }
   }
 </script>
@@ -472,10 +497,12 @@
     padding: 20px;
     border-bottom: 1px solid #d9d9d9;
   }
+
   .article_list {
     width: 100%;
     display: block;
   }
+
   .article_list li {
     cursor: pointer;
     font-size: 1.5rem;
@@ -489,22 +516,30 @@
     padding-left: 10px;
     flex: 1;
   }
-  .article_list li .title{
+
+  .article_list li .title {
     margin-top: 10px;
     font-weight: 600;
     font-size: 1.8rem;
   }
-  .article_list li .content{
+
+  .article_list li .content {
     margin-top: 5px;
     font-weight: 500;
     font-size: 1.4rem;
+    width: 250px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
-  .article_list li .number{
+
+  .article_list li .number {
     margin-top: 5px;
     font-weight: 500;
     font-size: 1.1rem;
   }
-  .article_list li .right{
+
+  .article_list li .right {
     padding: 30px 10px 0 10px;
   }
 
@@ -516,7 +551,8 @@
     background: #e6e6e6;
     border-left: 3px solid #ec7259;
   }
-  .el-dropdown-menu__item i{
+
+  .el-dropdown-menu__item i {
     margin-right: 6px;
   }
 

@@ -9,6 +9,7 @@ import * as getters from './getters.js'
 import Main from './modules/main.js'
 import Author from './modules/author.js'
 import Users from './modules/users.js'
+import Article from './modules/article.js'
 
 Vue.use(Vuex);
 
@@ -21,7 +22,8 @@ export default new Vuex.Store({
   modules:{
     Main,
     Author,
-    Users
+    Users,
+    Article
   },
   strict: debug
 });

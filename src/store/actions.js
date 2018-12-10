@@ -26,3 +26,10 @@ export const changeAuthorInfo = ({commit},payload)=>{
 export const changeUserInfo = ({commit},payload)=>{
   commit(types.CHANGE_USER_INFO,payload);
 };
+
+export const getArticle = ({commit,state},article) => {
+  commit(types.GET_ARTICLE,article);
+};
+export const updateArticle = ({commit,state},article) => {
+  commit(types.UPDATE_ARTICLE,article);
+};

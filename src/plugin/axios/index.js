@@ -9,22 +9,32 @@ if (process.env.NODE_ENV === 'development') {
 axios.defaults.headers.Authorization = localStorage['token'] || null
 axios.interceptors.request.use(function (config) {
   // Do something before request is sent
-  loading = Loading.service({
-    lock: true,
-    text: 'Loading',
-    background: 'rgba(0, 0, 0, 0.1)'
-  });
+
+
+  if(!['getArticleListByTypes','updateArticle'].includes(config.url,0)){
+    loading = Loading.service({
+      lock: true,
+      text: 'Loading',
+      background: 'rgba(0, 0, 0, 0.1)'
+    });
+  }
+
   config.headers['x-csrf-token'] = Cookies.get('csrfToken')
   return config
 }, function (error) {
-  loading.close()
+  if(loading){
+    loading.close()
+  }
+
   // Do something with request error
   return Promise.reject(error)
 })
 // 在这里对返回的数据进行处理
 // 在这里添加你自己的逻辑
 axios.interceptors.response.use(res => {
-  loading.close()
+  if(loading){
+    loading.close()
+  }
   // console.log(res)
   if(res.data.success){
     if(res.data.code === 0){
@@ -40,7 +50,9 @@ axios.interceptors.response.use(res => {
   }
 
 }, error => {
-  loading.close()
+  if(loading){
+    loading.close()
+  }
   if (error.response.status === 401) {
     location.href = location.protocol + '//' + location.host + location.pathname + '#/login'
   } else {

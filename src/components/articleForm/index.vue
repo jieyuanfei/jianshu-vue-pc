@@ -2,7 +2,7 @@
   <div class="edit_div">
     <div class="title">
       <div class="input-title">
-        <input type="text"/>
+        <input type="text" v-model="article.title" @input="onchangeTitle"/>
       </div>
       <div class="utils">
         <el-dropdown>
@@ -25,7 +25,6 @@
         :toolbars="toolbars"
         v-model="article.content"
         codeStyle="atom-one-dark"
-        defaultOpen="edit"
         @change="markdownChange"
         @imgAdd="imgAdd"
         class="mark-editor"/>
@@ -35,18 +34,18 @@
 </template>
 <script>
   import { Loading } from 'element-ui'
+  import { mapState } from 'vuex'
   import * as qiniu from 'qiniu-js'
   export default {
     data() {
       return {
+        titleTimer: null,
+        contentTimer: null,
+        isTitleFirst:true,
+        isContentFirst:true,
         article: {
-          id: null,
-          title: '',
-          category: '',
-          tag: [],
-          content: '',
-          html: '',
-          status: 0
+          title:'',
+          content: ''
         },
         toolbars: {
           bold: true, // 粗体
@@ -98,34 +97,57 @@
       }
     },
     computed: {
+      ...mapState({
+        articles: state => state.Article.article
+      })
     },
+
     mounted() {
+      this.article = JSON.parse(JSON.stringify(this.articles))
+      this.isContentFirst = true;
+      this.isTitleFirst = true;
       // this._fetchOptions()
       // this._initData()
       // 去服务端生成七牛token
       // this.fetchUploadToken()
     },
     methods: {
-      // 获取选项数据
-      _fetchOptions() {
-        this.$axios('/getArticleOptions').then(res => {
-          this.categories = res.data.categoryList
-          this.tags = res.data.tagsList
-        })
-      },
-      _initData() {
-        if (!this.detail.tagId) {
-          this.tag = []
-        } else {
-          this.article.tag = this.detail.tagId.map(item => {
-            return item._id
-          })
+      onchangeTitle(){
+        this.clearTimer(0);
+        if(this.isTitleFirst){
+          this.isTitleFirst = !this.isTitleFirst;
+          return false;
         }
-        this.article.category = this.detail.categoryId ? this.detail.categoryId._id : ''
-        this.article.content = this.detail.content || ''
-        this.article.title = this.detail.title || ''
-        this.article.id = this.detail._id || ''
+        if (this.article.title && this.article.title.length > 0) {
+          //获取当前延时函数的ID，便于后面clearTimeout清除该ID对应的延迟函数
+          this.titleTimer = setTimeout(() => {
+
+            this.postArticle()
+
+          }, 1500);
+        }
       },
+      onchangeContent(){
+        this.clearTimer(1);
+        if(this.isContentFirst){
+          this.isContentFirst = !this.isContentFirst;
+          return false;
+        }
+        if (this.article.content && this.article.content.length > 0) {
+          //获取当前延时函数的ID，便于后面clearTimeout清除该ID对应的延迟函数
+          this.contentTimer = setTimeout(() => {
+            this.postArticle()
+          }, 3000);
+        }
+      },
+      clearTimer(status) {
+        if (status == 0 && this.titleTimer) {
+          clearTimeout(this.titleTimer);
+        }else if(status == 1 && this.contentTimer){
+          clearTimeout(this.contentTimer);
+        }
+      },
+
       submit() {
         this.article.status = 0
         this.postArticle()
@@ -135,38 +157,18 @@
         this.postArticle()
       },
       postArticle() {
-        this.loading = Loading.service({ fullscreen: true })
-        this.$axios.post('/postArticle', this.article)
-          .then(res => {
-            this.loading.close()
-            if (res.errcode === 0) {
-              if (res.data.id) {
-                // 清空文章内容
-                this.article = {
-                  id: null,
-                  title: '',
-                  category: '',
-                  tag: [],
-                  content: '',
-                  html: '',
-                  status: 0
-                }
-                this.$router.push(`editArticle/${res.data.id}`)
-              }
-              this.$message({
-                message: res.msg,
-                type: 'success'
-              })
-            } else {
-              this.$message({
-                message: res.msg,
-                type: 'error'
-              })
-            }
-          })
+        let articleInfo = {
+          id:this.article.id,
+          title:this.article.title,
+          content:this.article.content
+        }
+        this.$axios.post('updateArticle',{query:articleInfo,html:this.article.html}).then(res=>{
+          this.$store.dispatch('updateArticle',{id:this.article.id})
+        }).catch(err=>{})
       },
       markdownChange(markdown, html) {
         this.article.html = html
+        this.onchangeContent()
       },
       fetchUploadToken() {
         this.$axios.get('/getQiniuToken')
@@ -201,6 +203,13 @@
         let url = 'http://你七牛的外链默认域名/' + res.key
         // 将url插入markdown
         this.$refs.md.$img2Url(this.pos, url)
+      }
+    },
+    watch: {
+      articles: function (cur,old) {
+        this.isTitleFirst = true
+        this.isContentFirst = true
+        this.article = JSON.parse(JSON.stringify(cur));
       }
     }
   }
