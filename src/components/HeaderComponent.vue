@@ -78,9 +78,4 @@ export default {
 }
 </script>
 
-<style scoped>
-  .header-component{
-    margin-bottom: 30px;
-  }
-</style>
 

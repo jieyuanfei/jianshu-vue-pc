@@ -10,11 +10,11 @@ axios.defaults.headers.Authorization = localStorage['token'] || null
 axios.interceptors.request.use(function (config) {
   // Do something before request is sent
 
-
+  console.log(config.url)
   if(!['getArticleListByTypes','updateArticle'].includes(config.url,0)){
     loading = Loading.service({
       lock: true,
-      text: 'Loading',
+      text: '加载中....',
       background: 'rgba(0, 0, 0, 0.1)'
     });
   }

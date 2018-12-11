@@ -5,15 +5,15 @@
         <input type="text" v-model="article.title" @input="onchangeTitle"/>
       </div>
       <div class="utils">
-        <el-dropdown>
+        <el-dropdown  @command="submit">
           <el-button type="danger" round>发布<i class="el-icon-check"></i> </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item><i class="el-icon-upload"></i>直接发布</el-dropdown-item>
-            <el-dropdown-item><i class="el-icon-time"></i>存在草稿</el-dropdown-item>
-            <el-dropdown-item><i class="el-icon-close"></i>取消发布</el-dropdown-item>
-            <el-dropdown-item><i class="el-icon-goods"></i>私密文章</el-dropdown-item>
-            <el-dropdown-item><i class="el-icon-delete"></i>删除文章</el-dropdown-item>
-            <el-dropdown-item><i class="el-icon-view"></i>阅览文章</el-dropdown-item>
+            <el-dropdown-item command="0"><i class="el-icon-upload"></i>直接发布</el-dropdown-item>
+            <el-dropdown-item command="1"><i class="el-icon-time"></i>存在草稿</el-dropdown-item>
+            <el-dropdown-item command="2"><i class="el-icon-goods"></i>私密文章</el-dropdown-item>
+            <el-dropdown-item command="3"><i class="el-icon-delete"></i>删除文章</el-dropdown-item>
+            <el-dropdown-item command="4"><i class="el-icon-view"></i>阅览文章</el-dropdown-item>
+            <el-dropdown-item command="5"><i class="el-icon-time"></i>历史版本</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
@@ -33,7 +33,7 @@
 
 </template>
 <script>
-  import { Loading } from 'element-ui'
+  import { Loading, Message } from 'element-ui'
   import { mapState } from 'vuex'
   import * as qiniu from 'qiniu-js'
   export default {
@@ -41,11 +41,12 @@
       return {
         titleTimer: null,
         contentTimer: null,
-        isTitleFirst:true,
-        isContentFirst:true,
+        isFirst:true,
         article: {
+          id: null,
           title:'',
-          content: ''
+          content: '',
+          status: 1,
         },
         toolbars: {
           bold: true, // 粗体
@@ -84,18 +85,6 @@
         }
       }
     },
-    props: {
-      topic: {
-        type: String,
-        default: '新建文章'
-      },
-      detail: {
-        type: Object,
-        default: function () {
-          return {}
-        }
-      }
-    },
     computed: {
       ...mapState({
         articles: state => state.Article.article
@@ -103,40 +92,61 @@
     },
 
     mounted() {
-      this.article = JSON.parse(JSON.stringify(this.articles))
-      this.isContentFirst = true;
-      this.isTitleFirst = true;
-      // this._fetchOptions()
-      // this._initData()
-      // 去服务端生成七牛token
-      // this.fetchUploadToken()
+      this.getArticleById();
     },
     methods: {
+      getArticleById(){
+        let id = this.articles.id;
+        if(id){
+          let loading = Loading.service({
+            lock: true,
+            text: 'Loading',
+            background: 'rgba(0, 0, 0, 0.1)'
+          });
+          this.checkIsLastTimer().then(ret=>{
+            loading.close()
+            this.$axios.get('getArticleById',{params:{id:id}}).then(res=>{
+              this.isFirst = true;
+              this.article = res.data
+            }).catch(err=>{})
+          })
+        }
+
+      },
       onchangeTitle(){
         this.clearTimer(0);
-        if(this.isTitleFirst){
-          this.isTitleFirst = !this.isTitleFirst;
+        if(this.isFirst){
+          this.isFirst = !this.isFirst;
           return false;
         }
         if (this.article.title && this.article.title.length > 0) {
           //获取当前延时函数的ID，便于后面clearTimeout清除该ID对应的延迟函数
           this.titleTimer = setTimeout(() => {
 
-            this.postArticle()
+            this.postArticle().then(res=>{
+              this.$store.dispatch('updateArticle',{id:this.article.id,time:new Date()})
+            }).catch(err=>{
+              console.error("报错:"+err);
+            })
 
-          }, 1500);
+          }, 3000);
         }
       },
       onchangeContent(){
         this.clearTimer(1);
-        if(this.isContentFirst){
-          this.isContentFirst = !this.isContentFirst;
+        if(this.isFirst){
+          this.isFirst = !this.isFirst;
           return false;
         }
         if (this.article.content && this.article.content.length > 0) {
-          //获取当前延时函数的ID，便于后面clearTimeout清除该ID对应的延迟函数
           this.contentTimer = setTimeout(() => {
-            this.postArticle()
+
+            this.postArticle().then(res=>{
+              this.$store.dispatch('updateArticle',{id:this.article.id,time:new Date()})
+            }).catch(err=>{
+              console.error("报错:"+err);
+            })
+
           }, 3000);
         }
       },
@@ -147,24 +157,101 @@
           clearTimeout(this.contentTimer);
         }
       },
+      // 检查当前是否有修改后没提交完的数据
+      checkIsLastTimer(){
+        return new Promise((resolve, reject)=>{
+          if(this.titleTimer != null || this.contentTimer != null){
+            let count = 0;
+            let Timer = setInterval(()=>{
+              count ++;
+              if(count>5){
+                clearInterval(Timer)
+                resolve();
+              }
+              if(this.titleTimer != null || this.contentTimer != null){
 
-      submit() {
-        this.article.status = 0
-        this.postArticle()
+              }else{
+                clearInterval(Timer)
+                resolve();
+              }
+            },500)
+
+          }else{
+            resolve();
+          }
+        })
+
       },
-      saveDraft() {
-        this.article.status = 1
-        this.postArticle()
+
+      submit(command) {
+        if(command == 0){
+          this.article.status = 0
+          this.save('您要将文章直接发布吗')
+        }else if(command == 1){
+          this.article.status = 1
+          this.save('您要将文章存在草稿箱吗')
+        }else if(command == 2){
+          this.article.status = 2
+          this.save('您要将文章存为私密吗')
+        }else if(command == 3){
+          this.article.status = 3
+          this.save('您要将文章删除吗，如果删除，文章保存在垃圾箱，30天后将永久删除')
+        }else if(command == 4){
+          this.$router.push({path:'articleDetail',query:{id:this.article.id}})
+        }else if(command == 5){
+          Message({
+            type: 'success',
+            message: '功能暂时还未开发!'
+          });
+        }
+      },
+      save(title) {
+        MessageBox.confirm(title+', 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+          center: true
+        }).then(()=>{
+          let loading = Loading.service({
+            lock: true,
+            text: '正在发布中.....',
+            background: 'rgba(0, 0, 0, 0.1)'
+          });
+          this.article.status = 1
+          this.postArticle().then(res=>{
+            console.log(res)
+            loading.close()
+            Message({
+              type: 'success',
+              message: '发布成功!'
+            });
+          }).catch(err=>{
+            loading.close()
+            Message({
+              type: 'error',
+              message: '发布失败!'
+            });
+
+          })
+        }).catch(err=>{
+
+        });
       },
       postArticle() {
         let articleInfo = {
           id:this.article.id,
           title:this.article.title,
-          content:this.article.content
+          content:this.article.content,
+          status: this.article.status
         }
-        this.$axios.post('updateArticle',{query:articleInfo,html:this.article.html}).then(res=>{
-          this.$store.dispatch('updateArticle',{id:this.article.id})
-        }).catch(err=>{})
+        return new Promise((resolve,reject)=>{
+          this.$axios.post('updateArticle',{query:articleInfo,html:this.article.html}).then(res=>{
+            resolve(res)
+          }).catch(err=>{
+            reject(err)
+          })
+        })
+
       },
       markdownChange(markdown, html) {
         this.article.html = html
@@ -207,9 +294,7 @@
     },
     watch: {
       articles: function (cur,old) {
-        this.isTitleFirst = true
-        this.isContentFirst = true
-        this.article = JSON.parse(JSON.stringify(cur));
+        this.getArticleById();
       }
     }
   }

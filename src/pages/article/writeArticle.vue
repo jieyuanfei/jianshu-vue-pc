@@ -278,7 +278,9 @@
     },
     watch: {
       checkArticleInfo:function (curVal, oldVal) {
-        this.$store.dispatch('getArticle',  JSON.parse(JSON.stringify(curVal)))
+        if(curVal.id != oldVal.id){
+          this.$store.dispatch('getArticle', {id:curVal.id})
+        }
       },
       articles:function (curVal, oldVal) {
         this.getArticleListByTypes(this.checkTypeInfo.id)
