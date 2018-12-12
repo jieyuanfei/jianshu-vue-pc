@@ -5,9 +5,9 @@
     <router-link to="/signUp" class="btn sign-up" v-if="!navShow">注册</router-link>
     <router-link to="/signIn" class="btn log-in" v-if="!navShow">登录</router-link>
     <span class="btn log-in userInfo" v-if="navShow">
-       <el-dropdown placement="bottom-start">
+       <el-dropdown placement="bottom-start" @command="setting">
         <span class="el-dropdown-link">
-          <img src="../../static/img/author-hots1.jpg"/><i class="el-icon-caret-bottom updown"></i>
+          <img :src="user.header_url"/><i class="el-icon-caret-bottom updown"></i>
         </span>
         <el-dropdown-menu slot="dropdown">
           <el-dropdown-item><i class="el-icon-service orange"></i> 我的主页</el-dropdown-item>
@@ -17,74 +17,74 @@
           <el-dropdown-item><i class="el-icon-goods orange"></i> 我的钱包</el-dropdown-item>
           <el-dropdown-item><i class="el-icon-setting orange"></i> 设置</el-dropdown-item>
           <el-dropdown-item><i class="el-icon-question orange"></i> 帮助反馈</el-dropdown-item>
-          <el-dropdown-item><i class="el-icon-back orange"></i> 退出</el-dropdown-item>
+          <el-dropdown-item command="logout"><i class="el-icon-back orange"></i> 退出</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
      </span>
+    <span class="btn log-in language">Aa</span>
     <div class="container">
       <ul class="nav navbar-nav">
-        <li class="tab" v-if="!navShow">
+        <li class="tab" v-if="!navShow" >
           <router-link to="/">
             <span class="menu-text">首页</span>
             <i class="iconfont ic-navigation-discover menu-icon"></i>
           </router-link>
         </li>
-        <li class="tab" v-if="!navShow">
+        <li class="tab" v-if="!navShow" >
           <router-link to="/download" class="app-download-btn"><span class="menu-text">下载APP</span><i
             class="iconfont menu-icon ic-navigation-download"></i></router-link>
         </li>
-        <li class="tab" v-if="navShow">
+        <li class="tab" v-if="navShow" >
           <router-link to="/">
             <span class="menu-text">发现</span>
           </router-link>
         </li>
-        <li class="tab" v-if="navShow">
-          <a>
+        <li class="tab" v-if="navShow" >
+          <router-link to="/author">
             <span class="menu-text">关注</span>
-          </a>
-
+          </router-link>
         </li>
-        <li class="tab news" v-if="navShow">
-          <el-dropdown placement="bottom-start">
-            <el-badge :value="1" class="item">
-              <span class="menu-text">消息</span>
-            </el-badge>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item><i class="el-icon-service orange"></i> 我的主页</el-dropdown-item>
-              <el-dropdown-item><i class="el-icon-star-off orange"></i> 收藏的文章</el-dropdown-item>
-              <el-dropdown-item><i class="el-icon-view orange"></i> 喜欢的文章</el-dropdown-item>
-              <el-dropdown-item><i class="el-icon-sold-out orange"></i> 已购内容</el-dropdown-item>
-              <el-dropdown-item><i class="el-icon-goods orange"></i> 我的钱包</el-dropdown-item>
-              <el-dropdown-item><i class="el-icon-setting orange"></i> 设置</el-dropdown-item>
-              <el-dropdown-item><i class="el-icon-question orange"></i> 帮助反馈</el-dropdown-item>
-              <el-dropdown-item><i class="el-icon-back orange"></i> 退出</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+        <li class="tab" v-if="navShow" style="margin-right: 20px;">
+          <router-link to="/author2">
+            <el-dropdown placement="bottom-start">
+              <el-badge :value="1" class="item">
+                <span class="menu-text">消息</span>
+              </el-badge>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item><i class="el-icon-service orange"></i> 我的主页</el-dropdown-item>
+                <el-dropdown-item><i class="el-icon-star-off orange"></i> 收藏的文章</el-dropdown-item>
+                <el-dropdown-item><i class="el-icon-view orange"></i> 喜欢的文章</el-dropdown-item>
+                <el-dropdown-item><i class="el-icon-sold-out orange"></i> 已购内容</el-dropdown-item>
+                <el-dropdown-item><i class="el-icon-goods orange"></i> 我的钱包</el-dropdown-item>
+                <el-dropdown-item><i class="el-icon-setting orange"></i> 设置</el-dropdown-item>
+                <el-dropdown-item><i class="el-icon-question orange"></i> 帮助反馈</el-dropdown-item>
+                <el-dropdown-item command="logout"><i class="el-icon-back orange"></i> 退出</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </router-link>
         </li>
         <li class="search">
           <form>
             <input type="text" placeholder="搜索" class="search-input" @focus="changeWidth('longer')"
-                   @blur="changeWidth('shorter')"/>
-            <a class="search-btn"><i class="iconfont ic-search"></i></a>
-            <div class="navbar-search-tips">
+                   @blur="changeWidth('shorter')" v-model="searchText"/>
+            <a class="search-btn" @click.stop @submit.prevent @click="search"><i class="iconfont ic-search"></i></a>
+            <div :class="{'navbar-search-tips':true,show:tips}">
               <div class="search-trending">
                 <div class="search-trending-header clearfix">
                   <span>热门搜索</span>
-                  <a><i class="iconfont ic-search-change" style="transform:rotate(0deg)"></i>换一批</a>
+                  <a href="javascript:;" @click="changeTips"><i class="iconfont ic-search-change" style="transform:rotate(0deg)"></i>换一批</a>
                 </div>
                 <ul class="search-trending-tag-wrap">
-                  <li><a>区块链</a></li>
-                  <li><a>小程序</a></li>
-                  <li><a>三生三世</a></li>
-                  <li><a>vue</a></li>
-                  <li><a>rose的肉丝儿</a></li>
-                  <li><a>狼医生</a></li>
-                  <li><a>毕业</a></li>
-                  <li><a>php</a></li>
-                  <li><a>故事</a></li>
-                  <li><a>flutter</a></li>
+                  <li v-for="info in tipsList"><a href="javascript:;">{{info.text}}</a></li>
                 </ul>
               </div>
+              <ul class="search-trending-tag-wrap-history">
+                <li v-for="info in tipsHistory">
+                  <i class="el-icon-time"></i>
+                  <span>{{info.text}}</span>
+                  <i class="el-icon-close"></i>
+                </li>
+              </ul>
             </div>
           </form>
         </li>
@@ -94,41 +94,91 @@
 </template>
 
 <script>
-  import {mapState} from 'vuex'
+  import {mapGetters,mapState} from 'vuex'
+  import {Message, MessageBox} from 'element-ui'
 
   export default {
     data() {
       return {
-        navShow: false
+        navShow: false,
+        user:null,
+        tab:true,
+        tips: false,
+        tipsList:[],
+        tipsHistory:[],
+        searchText:'',
       }
     },
     computed: {
-      isLogin: {
-        get() {
-          console.log(Boolean(sessionStorage.getItem('isLogin')))
-          return Boolean(sessionStorage.getItem('isLogin'))
-        },
-        set() {
-          sessionStorage.setItem('isLogin', 'false')
-        }
-      },
       ...mapState({
         userInfo: state => state.Users.user
       })
     },
+    mounted(){
+      this.$store.dispatch('getUserInfo')
+      this.user = this.userInfo
+      if(this.user){
+        this.navShow = true
+      }
+      // 获取tips 后台获取
+      this.tipsList = [
+        {text:'小程序'},
+        {text:'三生三世'},
+        {text:'vue'},
+        {text:'react'},
+        {text:'angular'},
+        {text:'揭远飞'},
+        {text:'帅哥'},
+        {text:'故事'},
+        {text:'PHP'},
+        {text:'node'},
+        {text:'测试'}
+        ]
+      this.tipsHistory = JSON.parse(localStorage.getItem('TipsHistory'))||[];
+    },
     methods: {
+      search() {
+        this.tipsHistory.push({text:this.searchText})
+        localStorage.setItem('TipsHistory',JSON.stringify(this.tipsHistory))
+        Message.success('后续搜索功能打算用Elasticsearch，还在持续迭代中......')
+      },
+      changeTips() {
+        this.tips = true;
+      },
+      setting(command) {
+        if(command === 'logout'){
+          this.logout()
+        }
+      },
+      logout(){
+        this.$store.dispatch('logout',null)
+        this.$router.push({path:'signIn'})
+      },
       changeWidth(str) {
         let el = event.target;
         if (str === 'shorter') {
           el.style.width = '140px';
+          this.tips = false
         } else if (str === 'longer') {
+          this.tips = true
           el.style.width = '200px';
+        }
+      }
+    },
+    watch: {
+      userInfo: function (cur,old) {
+        this.user = cur
+        if(this.user){
+          this.navShow = true
+        }else{
+          this.navShow = false
         }
       }
     }
   }
 </script>
 <style scoped>
+
   .header-component {
     height:56px;
     border-top:1px solid #f0f0f0;
@@ -191,7 +241,7 @@
   }
   .navbar-nav li {
     margin-right: 5px;
-    float: left;
+    /*float: left;*/
   }
   .navbar-nav>.active>a {
     color: #ea6f5a;
@@ -246,13 +296,18 @@
     visibility: hidden;
     opacity: 0;
     border-radius: 4px;
+    z-index: 999999;
+  }
+  .navbar-search-tips.show{
+    visibility: visible;
+    opacity: 1;
   }
   .search input {
     transition:width 0.3s ease-in-out;
   }
   .search-trending {
     padding: 20px 20px 10px;
-    border-bottom: 1px solid #f0f0f0;
+
   }
   .search-trending-header {
     height: 20px;
@@ -278,6 +333,7 @@
   }
   .search-trending-tag-wrap {
     font-size: 0;
+
   }
   .search-trending-tag-wrap li {
     margin-right: 10px;
@@ -291,6 +347,25 @@
     border: 1px solid #ddd;
     border-radius: 3px;
   }
+  .search-trending-tag-wrap-history{
+    border-top: 1px solid #f0f0f0;
+    padding: 7px;
+  }
+  .search-trending-tag-wrap-history li{
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    border-radius: 4px;
+    padding: 7px 14px;
+  }
+  .search-trending-tag-wrap-history li:hover{
+    background: #eee;
+  }
+  .search-trending-tag-wrap-history li span{
+    flex: 1;
+    margin-left: 10px;
+    font-size: 14px;
+  }
   .userInfo {
     margin: 0;
     height: 100%;
@@ -299,6 +374,13 @@
 
   .userInfo:hover {
     background: #eee;
+  }
+
+  .router-link-exact-active .menu-text{
+    color: #ea6f5a !important;
+  }
+  .router-link-exact-active i{
+    color: #ea6f5a !important;
   }
 
   .userInfo img {
@@ -324,6 +406,12 @@
   }
   .tab .menu-text{
     font-size: 16px;
+  }
+  .language{
+    font-weight: 600;
+    font-size: 20px;
+    margin: 6px 6px 0 0;
+    color: #999999;
   }
 </style>
 <style>
