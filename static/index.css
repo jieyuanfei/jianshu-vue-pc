@@ -29,52 +29,7 @@ body {
 /*---------------------headerComponent----------------------------*/
 
 /*------------------------homepage--------------------------*/
-.homepage {
-  width: 960px;
-  margin: 0 auto;
-}
-.homepage .homepageCarousel {
 
-  border-radius: 6px;
-  overflow: hidden;
-  z-index: 1000;
-  width: 485px;
-  height: 210px;
-  position: relative;
-}
-.homepage .homepageCarousel ul {
-  overflow: hidden;
-}
-.homepage .homepageCarousel .carouselshow {
-  width: 485px;
-  height: 210px;
-}
-.homepage .homepageCarousel li {
-  position: absolute;
-}
-.homepage .homepageCarousel img {
-  width: 485px;
-  height: 210px;
-}
-.homepage .homepageCarousel .carousel-bar {
-  position: absolute;
-  width: 100%;
-  bottom: 10px;
-  margin: 0 auto;
-  z-index: 10;
-  text-align: center;
-}
-.homepage .homepageCarousel .carousel-bar span {
-  width: 20px;
-  height: 5px;
-  border: 1px solid hsla(0,0%,47%,.4);
-  background-color: hsla(0,0%,47%,.4);
-  display: inline-block;
-  margin-right: 10px;
-}
-.homepage .homepageCarousel .active {
-  background: white !important;
-}
 /*-------------carousel-transition--------------------*/
 .carousel-enter-active {
   transform: translateX(0);
