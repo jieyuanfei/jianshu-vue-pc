@@ -378,10 +378,10 @@
   .nav>li>a:hover{
     background: #eeeeee;
   }
-  .router-link-exact-active:not(.nohover):hover{
-    background: white;
-    height: 20px;
-  }
+  /*.router-link-exact-active:not(.nohover):hover{*/
+    /*!*background: white;*!*/
+    /*!*height: 20px;*!*/
+  /*}*/
   .router-link-exact-active .menu-text{
     color: #ea6f5a !important;
   }

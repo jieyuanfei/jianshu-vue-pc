@@ -150,6 +150,7 @@ export default {
 .author {
   width: 960px;
   margin: 0 auto;
+  padding: 20px 0;
 }
 .author .author-top {
   margin-bottom: 35px;

@@ -1,16 +1,17 @@
 <template>
   <div class="homepage">
-    <div class="main-left">
+    <div class="home-main-left">
       <div class="homepageCarousel" @mouseover="clearTimer()" @mouseout="selfAdd()">
         <div class="carouselshow">
-          <transition-group  tag="ul" name="carousel">
+          <transition-group tag="ul" name="carousel">
             <li v-for="(img,index) in carouselImg" :key="index" v-show="mark === index">
               <a href="#"><img :src="img"/></a>
             </li>
           </transition-group>
         </div>
         <div class="carousel-bar">
-          <span v-for="(item,index) in carouselImg" :key="index" :class="{active: mark === index}" @click="changeMark(index)"></span>
+          <span v-for="(item,index) in carouselImg" :key="index" :class="{active: mark === index}"
+                @click="changeMark(index)"></span>
         </div>
       </div>
       <div class="hots">
@@ -21,9 +22,13 @@
       </div>
       <div class="split-line"></div>
       <!--按需加载文章-->
-      <article-list :articleList="articles"></article-list>
+      <article-list :articleList="articles.rows"></article-list>
+      <div class="more" v-show="articles.rows.length > 0">
+        <el-button type="info" round><i class="el-icon-loading"></i> 更多</el-button>
+      </div>
+
     </div>
-    <div class="main-right">
+    <div class="home-main-right">
       <div class="board">
         <a href="#"><img src="../../static/img/banner.png" alt=""></a>
         <a href="#"><img src="../../static/img/banner2.png" alt=""></a>
@@ -44,57 +49,79 @@
 </template>
 
 <script>
-import {mapState} from 'vuex'
-import recommendedAuthor from '../components/recommendedAuthor'
-import  ArticleList  from './../pages/article/articleList'
+  import {mapState} from 'vuex'
+  import recommendedAuthor from '../components/recommendedAuthor'
+  import ArticleList from './../pages/article/articleList'
 
   export default {
-    components:{
+    components: {
       recommendedAuthor,
       ArticleList
     },
-    computed:{
+    computed: {
       ...mapState({
-        articles:state => state.Author.authorInformation[0].articleLists.hots
+        // articles: state => state.Author.authorInformation[0].articleLists.hots
       })
     },
-    data(){
+    data() {
       return {
-        timer:null,
-        mark:0,  //比对图片索引的变量
-        carouselImg:[
+        timer: null,
+        mark: 0,  //比对图片索引的变量
+        carouselImg: [
           '../../static/img/carousel1.jpg',
           '../../static/img/carousel2.jpg',
           '../../static/img/carousel3.jpg'
         ],
-        hots:[
-          {src:'../../static/img/hot1.jpg',name:'人文社科'},
-          {src:'../../static/img/hot2.jpg',name:'@IT·互联网'},
-          {src:'../../static/img/hot3.jpg',name:'读书'},
-          {src:'../../static/img/hot4.jpg',name:'手绘'},
-          {src:'../../static/img/hot5.png',name:'旅行·在路上'},
-          {src:'../../static/img/hot6.jpg',name:'故事'},
-          {src:'../../static/img/hot7.jpg',name:'历史'},
-        ]
+        hots: [
+          {src: '../../static/img/hot1.jpg', name: '人文社科'},
+          {src: '../../static/img/hot2.jpg', name: '@IT·互联网'},
+          {src: '../../static/img/hot3.jpg', name: '读书'},
+          {src: '../../static/img/hot4.jpg', name: '手绘'},
+          {src: '../../static/img/hot5.png', name: '旅行·在路上'},
+          {src: '../../static/img/hot6.jpg', name: '故事'},
+          {src: '../../static/img/hot7.jpg', name: '历史'},
+        ],
+        articles:{
+          rows:[],
+          offset:0,
+          limit:10,
+        }
       }
     },
-    methods:{
-      getArticleList(){
-        this.$axios.get('/getArticleList').then(res=>{
-          alert(1)
+    mounted() {
+      this.getArticleList();
+    },
+    methods: {
+      getArticleList() {
+        this.$axios.get('/getArticleList').then(res => {
           console.log(res)
-        }).catch(err=>{})
+          this.articles.rows.push(...res.rows);
+          // this.articles = [{
+          //   title:'当CPU飙高时，它在做什么',
+          //   content:'在开发过程中，有时候我们发现JVM占用的CPU居高不下，跟我们的预期不符，这时，CPU在做什么呢？是什么线程让CPU如此忙碌呢？我们通过如下几步，可以查看CPU在执行什么线程。',
+          //   author:'刘振锋',
+          //   command:4,
+          //   like:43,
+          //   admire:1,
+          //   img:'../../static/img/author-newestCommand1.png'
+          // }];
+        }).catch(err => {
+        })
       },
       //自加1
-      selfAdd(){
+      selfAdd() {
         var self = this;
-        self.timer = setInterval(function(){
-          self.mark++; if(self.mark===3){self.mark=0;}},3500);
+        self.timer = setInterval(function () {
+          self.mark++;
+          if (self.mark === 3) {
+            self.mark = 0;
+          }
+        }, 3500);
       },
-      changeMark(index){
+      changeMark(index) {
         this.mark = index;
       },
-      clearTimer(){
+      clearTimer() {
         clearInterval(this.timer);
       },
       viewMore(theme) {
@@ -102,13 +129,82 @@ import  ArticleList  from './../pages/article/articleList'
         this.$router.push('/author');
       }
     },
-    created(){
+    created() {
       this.selfAdd();
     }
   }
 </script>
-<style>
-.homepage{
-  margin-top: 20px;
-}
+<style scoped>
+
+  .homepage {
+    width: 960px;
+    margin: 0 auto;
+    padding: 20px 0 180px 30px;
+    box-sizing: border-box;
+  }
+  .home-main-left {
+    width: 615px;
+    float: left;
+  }
+  .home-main-right {
+    width: 280px;
+    margin:0 0 0 35px;
+    display: inline-block;
+  }
+  .homepage .homepageCarousel {
+    border-radius: 6px;
+    overflow: hidden;
+    z-index: 1000;
+    width: 615px;
+    height: 270px;
+    position: relative;
+    border: 1px solid #eeeeee;
+  }
+
+  .homepage .homepageCarousel ul {
+    overflow: hidden;
+  }
+
+  .homepage .homepageCarousel .carouselshow {
+    width: 615px;
+    height: 270px;
+  }
+
+  .homepage .homepageCarousel li {
+    position: absolute;
+  }
+
+  .homepage .homepageCarousel img {
+    width: 615px;
+    height: 270px;
+  }
+
+  .homepage .homepageCarousel .carousel-bar {
+    position: absolute;
+    width: 100%;
+    bottom: 10px;
+    margin: 0 auto;
+    z-index: 10;
+    text-align: center;
+  }
+
+  .homepage .homepageCarousel .carousel-bar span {
+    width: 20px;
+    height: 5px;
+    border: 1px solid hsla(0, 0%, 47%, .4);
+    background-color: hsla(0, 0%, 47%, .4);
+    display: inline-block;
+    margin-right: 10px;
+  }
+
+  .homepage .homepageCarousel .active {
+    background: white !important;
+  }
+  .more{
+    width: 100%;
+    padding: 30px 15px;
+  }
+  .more button{
+    width: 100%;
+  }
 </style>
