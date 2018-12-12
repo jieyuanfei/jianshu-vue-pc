@@ -91,7 +91,6 @@ export default {
           }
         })
           .then(res => {
-            console.log(res)
             localStorage['token'] = res.token
             this.$axios.defaults.headers.Authorization = localStorage['token']
             // 设置 cookie 一定要存 uuid整个系统依赖这个数据进行校验和存储
@@ -100,9 +99,12 @@ export default {
               expires: 1
             })
             Message.success('登录成功')
+            this.$store.dispatch('changeUserInfo',res)
+
             // 给提示留出时间，延迟跳转
             setTimeout(() => {
-              this.$router.push({path:'/'})
+              let path = this.$route.query.redirect || '/';
+              this.$router.push({path:path})
             }, 500)
           })
           .catch(err => {

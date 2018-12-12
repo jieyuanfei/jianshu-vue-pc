@@ -1,39 +1,31 @@
 import * as types from '../mutation-types'
 
-let users = [
-  {"username":"Lucy","password":"123456",login:false,info:{
-    following:[]
-    }},
-  {"username":"qweasd","password":"123456",login:false,info:{
-      following:[]
-    }},
-  {"username":"iopjkl","password":"123456",login:false,info:{
-      following:[]
-    }}
-];
 
-const state = {user:{...users[0]}};
+const state = {user:null};
 
 const mutations = {
-  [types.SIGN_UP_USER](state,payload){
-    users.push({username:payload.username,password:payload.password,login:true,info:{following:[]}});
-    if(payload.isChecked){
-      localStorage.setItem(payload.username,payload.password);
+
+  [types.GET_USER_INFO](state,str){
+    let user = JSON.parse(localStorage.getItem('userInfo'));
+    if(!user){
+      user = JSON.parse(sessionStorage.getItem('userInfo'))
     }
-    state.user = users[users.length-1];console.log(state.user);
-  },
-  [types.GET_USER_INFO](state,username){
-    for(let i = 0,len = users.length; i<len; i++){
-      if(users[i].username === username){
-        state.user = users[i];
-      }
-    }
+    state.user = user
   },
   [types.CHANGE_USER_INFO](state,payload){
-    payload.follow && state.user.info.following.indexOf(payload.follow) === -1?
-      state.user.info.following.push(payload.follow):'';
-    payload.unfollow && state.user.info.following.indexOf(payload.unfollow) !== -1?
-      state.user.info.following.splice(state.user.info.following.indexOf(payload.unfollow),1):'';
+    if(payload.isChecked){
+      localStorage.setItem('userInfo',JSON.stringify(payload))
+    }else{
+      sessionStorage.setItem('userInfo',JSON.stringify(payload))
+    }
+    state.user = payload
+  },
+  [types.LOGOUT](state,payload){
+    localStorage.removeItem('userInfo')
+    sessionStorage.removeItem('userInfo')
+    localStorage.removeItem('token')
+    console.log("logout")
+    state.user = null
   }
 };
 

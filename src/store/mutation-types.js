@@ -14,6 +14,8 @@ export const CHANGE_AUTHOR_INFO = 'changeAuthorInfo';
 
 export const CHANGE_USER_INFO = 'changeUserInfo';
 
+export const LOGOUT = 'logout';
+
 export const GET_ARTICLE = 'getArticle';
 
 export const UPDATE_ARTICLE = 'updateArticle';

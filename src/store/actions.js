@@ -15,21 +15,26 @@ export const signUpUser = ({commit},payload) =>{
   commit(types.SIGN_UP_USER,payload);
 };
 
-export const getUserInfo = ({commit,state},str) => {
-  commit(types.GET_USER_INFO,str);
-};
 
 export const changeAuthorInfo = ({commit},payload)=>{
   commit(types.CHANGE_AUTHOR_INFO,payload);
+};
+
+export const getUserInfo = ({commit,state},str) => {
+  commit(types.GET_USER_INFO,str);
 };
 
 export const changeUserInfo = ({commit},payload)=>{
   commit(types.CHANGE_USER_INFO,payload);
 };
 
-export const getArticle = ({commit,state},article) => {
-  commit(types.GET_ARTICLE,article);
+export const logout = ({commit},payload)=>{
+  commit(types.LOGOUT,payload);
 };
-export const updateArticle = ({commit,state},article) => {
-  commit(types.UPDATE_ARTICLE,article);
+
+export const getArticle = ({commit,state},payload) => {
+  commit(types.GET_ARTICLE,payload);
+};
+export const updateArticle = ({commit,state},payload) => {
+  commit(types.UPDATE_ARTICLE,payload);
 };
