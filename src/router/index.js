@@ -33,8 +33,8 @@ const router = new Router({
     },
     {
       path:'/writeArticle',
-      mate:{
-        requireAuth: true
+      meta:{
+        requireAuth: false
       },
       component:WriteArticle
     },
@@ -54,7 +54,11 @@ const router = new Router({
 // 判断是否需要登录权限 以及是否登录
 router.beforeEach((to, from, next) => {
   if (to.matched.some(res => res.meta.requireAuth)) {// 判断是否需要登录权限
-    if (localStorage.getItem('userInfo')) {// 判断是否登录
+    let userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    if(!userInfo){
+      userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
+    }
+    if (userInfo) {// 判断是否登录
       next()
     } else {// 没登录则跳转到登录界面
       next({
