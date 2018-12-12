@@ -375,13 +375,20 @@
   .userInfo:hover {
     background: #eee;
   }
-
+  .nav>li>a:hover{
+    background: #eeeeee;
+  }
+  .router-link-exact-active:not(.nohover):hover{
+    background: white;
+    height: 20px;
+  }
   .router-link-exact-active .menu-text{
     color: #ea6f5a !important;
   }
   .router-link-exact-active i{
     color: #ea6f5a !important;
   }
+
 
   .userInfo img {
     border: gainsboro;
@@ -401,9 +408,7 @@
     color: #999;
   }
 
-  .tab.news {
-    margin: 19px 40px 0 0;
-  }
+
   .tab .menu-text{
     font-size: 16px;
   }
