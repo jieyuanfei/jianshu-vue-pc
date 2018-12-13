@@ -23,8 +23,8 @@
       <div class="split-line"></div>
       <!--按需加载文章-->
       <article-list :articleList="articles.rows"></article-list>
-      <div class="more" v-show="articles.rows.length > 0">
-        <el-button type="info" round><i class="el-icon-loading"></i> 更多</el-button>
+      <div class="more" v-show="articles.rows.length > 0 && moreButton">
+        <el-button type="info" round @click="articleMore"><i class="el-icon-loading" v-show="moreButtonLoading"></i>阅读更多</el-button>
       </div>
 
     </div>
@@ -52,6 +52,7 @@
   import {mapState} from 'vuex'
   import recommendedAuthor from '../components/recommendedAuthor'
   import ArticleList from './../pages/article/articleList'
+  import {Message, MessageBox} from 'element-ui'
 
   export default {
     components: {
@@ -84,8 +85,10 @@
         articles:{
           rows:[],
           offset:0,
-          limit:10,
-        }
+          limit:20,
+        },
+        moreButton: true,
+        moreButtonLoading: false,
       }
     },
     mounted() {
@@ -93,20 +96,25 @@
     },
     methods: {
       getArticleList() {
-        this.$axios.get('/getArticleList').then(res => {
-          console.log(res)
+        this.$axios.get('/getArticleList',{params:{offset:this.articles.offset,limit:this.articles.limit}}).then(res => {
+          this.moreButtonLoading = false;
+          if(res.rows.length > 0){
+            this.articles.offset = this.articles.offset + res.count;
+          }else{
+            this.moreButton = false
+            Message.success('已经没有更多新的信息了')
+            return false;
+          }
           this.articles.rows.push(...res.rows);
-          // this.articles = [{
-          //   title:'当CPU飙高时，它在做什么',
-          //   content:'在开发过程中，有时候我们发现JVM占用的CPU居高不下，跟我们的预期不符，这时，CPU在做什么呢？是什么线程让CPU如此忙碌呢？我们通过如下几步，可以查看CPU在执行什么线程。',
-          //   author:'刘振锋',
-          //   command:4,
-          //   like:43,
-          //   admire:1,
-          //   img:'../../static/img/author-newestCommand1.png'
-          // }];
         }).catch(err => {
         })
+      },
+      articleMore() {
+        this.moreButtonLoading = true;
+        setTimeout(()=>{
+          this.getArticleList();
+        },1000)
+
       },
       //自加1
       selfAdd() {

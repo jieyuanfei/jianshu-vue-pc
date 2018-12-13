@@ -82,7 +82,10 @@
           /* 2.2.1 */
           subfield: true, // 单双栏模式
           preview: true, // 预览
-        }
+        },
+        pos:null,
+        file:null,
+        token: '',
       }
     },
     computed: {
@@ -93,6 +96,8 @@
 
     mounted() {
       this.getArticleById();
+      // 去服务端生成七牛token
+      this.fetchUploadToken()
     },
     methods: {
       getArticleById(){
@@ -260,11 +265,12 @@
       fetchUploadToken() {
         this.$axios.get('/getQiniuToken')
           .then(res => {
-            if (res.errcode === 0) {
+            console.log(res)
+            if (res.code === 0) {
               this.token = res.data.token
             } else {
-              this.$message({
-                message: res.msg,
+              Message({
+                message: res.data.msg,
                 type: 'error'
               })
             }
@@ -283,11 +289,11 @@
         // ...
       },
       uploadError(err) {
-        alert(err)
+        Message.error("图片上传失败")
       },
       uploadComplete(res) {
         // 取得七牛返回的url
-        let url = 'http://你七牛的外链默认域名/' + res.key
+        let url = 'http://pjnp2p78o.bkt.clouddn.com/' + res.key
         // 将url插入markdown
         this.$refs.md.$img2Url(this.pos, url)
       }

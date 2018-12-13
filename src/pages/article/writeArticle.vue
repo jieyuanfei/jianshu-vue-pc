@@ -523,6 +523,10 @@
     margin-top: 10px;
     font-weight: 600;
     font-size: 1.8rem;
+    width: 250px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   .article_list li .content {
