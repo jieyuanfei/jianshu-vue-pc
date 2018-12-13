@@ -244,13 +244,13 @@
       },
       postArticle() {
         let articleInfo = {
-          id:this.article.id,
+          article_id:this.article.id,
           title:this.article.title,
           content:this.article.content,
           status: this.article.status
         }
         return new Promise((resolve,reject)=>{
-          this.$axios.post('updateArticle',{query:articleInfo,html:this.article.html}).then(res=>{
+          this.$axios.post('editArticle',{query:articleInfo,html:this.article.html}).then(res=>{
             resolve(res)
           }).catch(err=>{
             reject(err)
