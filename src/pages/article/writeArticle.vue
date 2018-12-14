@@ -40,7 +40,7 @@
       <ul class="article_list">
         <li :class="info.selected?'selected':''" v-for="info in articleList" @click="articleSelected(info)">
           <div class="right">
-            <i :class="info.status === 0 ?'el-icon-circle-check-outline':'el-icon-document'"></i>
+            <i :class="{'el-icon-circle-check-outline':info.status === 0 ,'el-icon-document':info.status === 1,'el-icon-goods':info.status === 2}"></i>
           </div>
 
           <div class="left" >
@@ -49,17 +49,18 @@
             <div class="number">字数:{{info.article_num}}</div>
           </div>
           <div class="right">
-            <el-dropdown trigger="click" @command="articleSetting">
+            <el-dropdown trigger="click" @command="storeGetArticle">
               <span class="el-dropdown-link">
                 <i class="el-icon-setting el-icon--right" style="color: black;font-size: 1.8rem"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="ok"><i class="el-icon-check"></i>已发布</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-goods"></i>设为私密</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-time"></i>历史版本</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-view"></i>全屏打开</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-share"></i>分享文章</el-dropdown-item>
-                <el-dropdown-item command="edit"><i class="el-icon-document"></i>移动文章</el-dropdown-item>
+                <el-dropdown-item command="ok" v-if="info.status === 0"><i class="el-icon-refresh"></i>重新发布</el-dropdown-item>
+                <el-dropdown-item command="ok" v-if="info.status === 1 || info.status === 2"><i class="el-icon-upload"></i>直接发布</el-dropdown-item>
+                <el-dropdown-item command="myself" v-if="info.status != 2"><i class="el-icon-goods"></i>设为私密</el-dropdown-item>
+                <el-dropdown-item command="history"><i class="el-icon-time"></i>历史版本</el-dropdown-item>
+                <el-dropdown-item command="detail"><i class="el-icon-view"></i>阅览文章</el-dropdown-item>
+                <el-dropdown-item command="share" v-if="info.status === 0"><i class="el-icon-share"></i>分享文章</el-dropdown-item>
+                <el-dropdown-item command="move"><i class="el-icon-document"></i>移动文章</el-dropdown-item>
                 <el-dropdown-item command="del"><i class="el-icon-delete"></i>删除文章</el-dropdown-item>
 
 
@@ -101,6 +102,12 @@
     },
     created() {
       this.getTypeList();
+      let a = [1,2].map(info=>{
+        if(info === 2){
+          return info
+        }
+      })
+      console.log(a)
     },
     computed: {
       ...mapState({
@@ -116,12 +123,24 @@
               return info
             })
             res.data.selected = true
+            this.checkArticleInfo = res.data;
             this.articleList.unshift(res.data)
           }).catch(err => {
           })
         }
       },
       articleSetting(command) {
+        this.storeGetArticle(command)
+        if (command === 'ok'){
+          this.$store.dispatch('getArticle', { id:this.checkArticleInfo.id, backId:this.checkArticleInfo.backId, typeId: this.checkTypeInfo.id, command: command })
+        }
+        else if (command === 'myself'){
+
+        }
+        else if (command === 'history'){}
+        else if (command === 'detail'){}
+        else if (command === 'share'){}
+        else if (command === 'move'){}
         if (command === 'del') {
           MessageBox.confirm('此操作将 "' + this.checkArticleInfo.title + '" 文章永久删除该文件, 是否继续?', '提示', {
             confirmButtonText: '确定',
@@ -146,8 +165,6 @@
 
           }).catch(() => {
           });
-
-        } else {
 
         }
       },
@@ -252,22 +269,13 @@
         })
       },
       getArticleListByTypes(type_id) {
-        this.$axios.get('getArticleListByTypes', {params: {type_id: type_id}}).then(res => {
+        this.$axios.get('getArticleBackByTypeId', {params: {type_id: type_id}}).then(res => {
           this.articleList = res.rows.map((info, index) => {
-            if(this.articles.id){
-              if(this.articles.id === info.id){
-                info.selected = true;
-                this.checkArticleInfo = info;
-              }else{
-                info.selected = false;
-              }
+            if (index === 0){
+              info.selected = true
+              this.checkArticleInfo = info
             }else{
-              if (index === 0) {
-                info.selected = true;
-                this.checkArticleInfo = info;
-              } else {
-                info.selected = false;
-              }
+              info.selected = false
             }
             return info;
           })
@@ -275,15 +283,37 @@
 
         })
       },
+      storeGetArticle(command = null) {
+        this.$store.dispatch('getArticle', { id:this.checkArticleInfo.id, backId:this.checkArticleInfo.backId, typeId: this.checkTypeInfo.id, command: command })
+      }
     },
     watch: {
       checkArticleInfo:function (curVal, oldVal) {
         if(curVal.id != oldVal.id){
-          this.$store.dispatch('getArticle', {id:curVal.id})
+          this.storeGetArticle()
         }
       },
       articles:function (curVal, oldVal) {
-        this.getArticleListByTypes(this.checkTypeInfo.id)
+        if(!curVal.command && curVal.command == 'del'){
+          this.articleList = this.articleList.filter(info=>{
+            if(info.id === curVal.id){
+              return false
+            }
+            return true;
+          })
+        }else{
+          this.articleList = this.articleList.map(info=>{
+            if(info.id === curVal.id){
+              info.backId = curVal.backId
+              info.title = curVal.title
+              info.text = curVal.text
+              info.article_num = curVal.article_num
+              info.status = curVal.status
+            }
+            return info;
+          })
+        }
+
       }
 
     },

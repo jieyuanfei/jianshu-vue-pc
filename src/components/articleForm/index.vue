@@ -33,7 +33,7 @@
 
 </template>
 <script>
-  import { Loading, Message } from 'element-ui'
+  import { Loading, Message, MessageBox } from 'element-ui'
   import { mapState } from 'vuex'
   import * as qiniu from 'qiniu-js'
   export default {
@@ -101,8 +101,7 @@
     },
     methods: {
       getArticleById(){
-        let id = this.articles.id;
-        if(id){
+        if(this.articles.backId){
           let loading = Loading.service({
             lock: true,
             text: 'Loading',
@@ -110,13 +109,13 @@
           });
           this.checkIsLastTimer().then(ret=>{
             loading.close()
-            this.$axios.get('getArticleById',{params:{id:id}}).then(res=>{
+            this.$axios.get('getArticleBackById',{params:{id:this.articles.backId}}).then(res=>{
               this.isFirst = true;
+              if(!res.data.content || res.data.content === ' '){}
               this.article = res.data
             }).catch(err=>{})
           })
         }
-
       },
       onchangeTitle(){
         this.clearTimer(0);
@@ -128,11 +127,7 @@
           //获取当前延时函数的ID，便于后面clearTimeout清除该ID对应的延迟函数
           this.titleTimer = setTimeout(() => {
 
-            this.postArticle().then(res=>{
-              this.$store.dispatch('updateArticle',{id:this.article.id,time:new Date()})
-            }).catch(err=>{
-              console.error("报错:"+err);
-            })
+            this.postArticle();
 
           }, 3000);
         }
@@ -146,11 +141,7 @@
         if (this.article.content && this.article.content.length > 0) {
           this.contentTimer = setTimeout(() => {
 
-            this.postArticle().then(res=>{
-              this.$store.dispatch('updateArticle',{id:this.article.id,time:new Date()})
-            }).catch(err=>{
-              console.error("报错:"+err);
-            })
+            this.postArticle();
 
           }, 3000);
         }
@@ -224,7 +215,6 @@
           });
           this.article.status = 1
           this.postArticle().then(res=>{
-            console.log(res)
             loading.close()
             Message({
               type: 'success',
@@ -244,19 +234,30 @@
       },
       postArticle() {
         let articleInfo = {
-          article_id:this.article.id,
-          title:this.article.title,
-          content:this.article.content,
-          status: this.article.status
+          id: this.article.id,
+          type_id: this.article.type_id,
+          article_id: this.article.article_id,
+          title: this.article.title,
+          content: this.article.content,
+          status: 0
         }
-        return new Promise((resolve,reject)=>{
-          this.$axios.post('editArticle',{query:articleInfo,html:this.article.html}).then(res=>{
-            resolve(res)
-          }).catch(err=>{
-            reject(err)
-          })
-        })
 
+        this.$axios.post('editArticle',{query:articleInfo,html:this.article.html}).then(res=>{
+          this.storeUpdateArticle(res)
+        }).catch(err=>{
+          Message.error('自动更新失败')
+        })
+      },
+      storeUpdateArticle(res,command = null) {
+        this.$store.dispatch('updateArticle',{
+          id: res.article_id,
+          backId: res.id,
+          title: res.title,
+          text: res.text,
+          article_num: res.article_num,
+          status: res.status,
+          command: command
+        })
       },
       markdownChange(markdown, html) {
         this.article.html = html
@@ -265,7 +266,6 @@
       fetchUploadToken() {
         this.$axios.get('/getQiniuToken')
           .then(res => {
-            console.log(res)
             if (res.code === 0) {
               this.token = res.data.token
             } else {
@@ -296,11 +296,79 @@
         let url = 'http://pjnp2p78o.bkt.clouddn.com/' + res.key
         // 将url插入markdown
         this.$refs.md.$img2Url(this.pos, url)
-      }
+      },
+      operation() {
+        let title = ''
+        let message = ''
+        let data = {
+          id: this.articles.id,
+          backId: this.articles.backId,
+        }
+        if (this.articles.command === 'ok'){
+          title = '您确定要直接发布这篇文章吗?'
+          message = '发布'
+          data.status = 0
+        }
+        else if (this.articles.command === 'myself'){
+          title = '您确定要将这篇文章转为私密文章吗?'
+          message = '设成私密文章'
+          data.status = 2
+        }
+        else if (this.articles.command === 'history'){}
+        else if (this.articles.command === 'detail'){}
+        else if (this.articles.command === 'share'){}
+        else if (this.articles.command === 'move'){}
+        else if (this.articles.command === 'del') {
+          title = '您确定要将这篇文章移到草稿箱吗?'
+          data.status = 3
+          message = '删除'
+        }
+        if(data.status != undefined){
+          this.updateStatus(data,title).then(res=>{
+            let data = {
+              id: this.article.article_id,
+              backId: this.article.backId,
+              title: this.article.title,
+              text: this.article.text,
+              article_num: this.article.article_num,
+              status: data.status
+            }
+            this.storeUpdateArticle(data,this.articles.command)
+            Message.success(message+'成功！')
+          }).catch(err=>{
+            Message.error(message+'失败！')
+          })
+        }
+      },
+      updateStatus(data,title='更新操作'){
+        return new Promise((resolve,reject)=>{
+          MessageBox.confirm(title+', 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+            center: true
+          }).then(() => {
+            this.$axios.post('updateStatus', data).then(res => {
+              resolve(res)
+            }).catch(err => {
+              reject(err)
+            })
+
+          }).catch(() => {
+            reject
+          });
+
+        })
+
+      },
     },
     watch: {
       articles: function (cur,old) {
-        this.getArticleById();
+        if(!cur.command){
+          this.getArticleById();
+        }else {
+          this.operation()
+        }
       }
     }
   }

@@ -19,3 +19,4 @@ export const LOGOUT = 'logout';
 export const GET_ARTICLE = 'getArticle';
 
 export const UPDATE_ARTICLE = 'updateArticle';
+
