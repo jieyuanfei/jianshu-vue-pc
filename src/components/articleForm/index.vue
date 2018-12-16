@@ -1,33 +1,29 @@
 <template>
   <div class="edit_div">
-    <div class="title">
-      <div class="input-title">
-        <input type="text" v-model="article.title" @input="onchangeTitle"/>
+    <div class="markdownBox" v-if="!isShow">
+      <div class="title">
+        <div class="input-title">
+          <input type="text" v-model="article.title" @input="onchangeTitle"/>
+        </div>
+        <div class="utils">
+          <el-button type="danger" round @click="save" v-show="releaseBtn">发布<i class="el-icon-check"></i> </el-button>
+          <el-button type="info" round v-show="!releaseBtn"><i class="el-icon-loading"></i> 正在保存</el-button>
+        </div>
       </div>
-      <div class="utils">
-        <el-dropdown  @command="submit">
-          <el-button type="danger" round>发布<i class="el-icon-check"></i> </el-button>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="0"><i class="el-icon-upload"></i>直接发布</el-dropdown-item>
-            <el-dropdown-item command="1"><i class="el-icon-time"></i>存在草稿</el-dropdown-item>
-            <el-dropdown-item command="2"><i class="el-icon-goods"></i>私密文章</el-dropdown-item>
-            <el-dropdown-item command="3"><i class="el-icon-delete"></i>删除文章</el-dropdown-item>
-            <el-dropdown-item command="4"><i class="el-icon-view"></i>阅览文章</el-dropdown-item>
-            <el-dropdown-item command="5"><i class="el-icon-time"></i>历史版本</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
+      <div class="edit">
+        <mavon-editor
+          id="mark"
+          ref="md"
+          :toolbars="toolbars"
+          v-model="article.content"
+          codeStyle="atom-one-dark"
+          @change="markdownChange"
+          @imgAdd="imgAdd"
+          class="mark-editor"/>
       </div>
     </div>
-    <div class="edit">
-      <mavon-editor
-        id="mark"
-        ref="md"
-        :toolbars="toolbars"
-        v-model="article.content"
-        codeStyle="atom-one-dark"
-        @change="markdownChange"
-        @imgAdd="imgAdd"
-        class="mark-editor"/>
+    <div class="isNullTips" v-if="isShow">
+      <div class="tips">仿简书</div>
     </div>
   </div>
 
@@ -36,9 +32,11 @@
   import { Loading, Message, MessageBox } from 'element-ui'
   import { mapState } from 'vuex'
   import * as qiniu from 'qiniu-js'
+  import article from "../../store/modules/article";
   export default {
     data() {
       return {
+        releaseBtn: true,
         titleTimer: null,
         contentTimer: null,
         isFirst:true,
@@ -86,6 +84,7 @@
         pos:null,
         file:null,
         token: '',
+        isShow: false
       }
     },
     computed: {
@@ -95,9 +94,16 @@
     },
 
     mounted() {
-      this.getArticleById();
       // 去服务端生成七牛token
       this.fetchUploadToken()
+      // 判断是否有文章存在，如果没有，则不显示编译框
+      if(this.articles.id){
+        this.getArticleById();
+
+      }else{
+        this.isShow = true;
+      }
+
     },
     methods: {
       getArticleById(){
@@ -178,61 +184,36 @@
         })
 
       },
-
-      submit(command) {
-        if(command == 0){
-          this.article.status = 0
-          this.save('您要将文章直接发布吗')
-        }else if(command == 1){
-          this.article.status = 1
-          this.save('您要将文章存在草稿箱吗')
-        }else if(command == 2){
-          this.article.status = 2
-          this.save('您要将文章存为私密吗')
-        }else if(command == 3){
-          this.article.status = 3
-          this.save('您要将文章删除吗，如果删除，文章保存在垃圾箱，30天后将永久删除')
-        }else if(command == 4){
-          this.$router.push({path:'articleDetail',query:{id:this.article.id}})
-        }else if(command == 5){
-          Message({
-            type: 'success',
-            message: '功能暂时还未开发!'
-          });
+      save() {
+        this.releaseBtn = false
+        let data = {
+          id: this.articles.id,
+          backId: this.articles.backId,
         }
-      },
-      save(title) {
-        MessageBox.confirm(title+', 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning',
-          center: true
-        }).then(()=>{
-          let loading = Loading.service({
-            lock: true,
-            text: '正在发布中.....',
-            background: 'rgba(0, 0, 0, 0.1)'
-          });
-          this.article.status = 1
-          this.postArticle().then(res=>{
-            loading.close()
-            Message({
-              type: 'success',
-              message: '发布成功!'
-            });
+        this.checkIsLastTimer().then(ret=>{
+          data.status = 0
+          this.updateStatus(data,'您确定要将这篇文章发布吗?').then(res=>{
+            let updateArticleObj = {
+              article_id: res.id,
+              id: this.article.id,
+              title: this.article.title,
+              text: this.article.text,
+              article_num: this.article.article_num,
+              status: res.status
+            }
+            this.storeUpdateArticle(updateArticleObj,'ok')
+            Message.success('发布成功！')
+            this.updateRelease()
           }).catch(err=>{
-            loading.close()
-            Message({
-              type: 'error',
-              message: '发布失败!'
-            });
-
+            this.updateRelease()
           })
         }).catch(err=>{
-
-        });
+          this.updateRelease()
+          Message.error('发布超时,请重新发布！')
+        })
       },
       postArticle() {
+        this.releaseBtn = false
         let articleInfo = {
           id: this.article.id,
           type_id: this.article.type_id,
@@ -243,10 +224,17 @@
         }
 
         this.$axios.post('editArticle',{query:articleInfo,html:this.article.html}).then(res=>{
+          this.updateRelease()
           this.storeUpdateArticle(res)
         }).catch(err=>{
+          this.updateRelease()
           Message.error('自动更新失败')
         })
+      },
+      updateRelease () {
+        setTimeout(()=>{
+          this.releaseBtn = true
+        },1000)
       },
       storeUpdateArticle(res,command = null) {
         this.$store.dispatch('updateArticle',{
@@ -305,35 +293,41 @@
           backId: this.articles.backId,
         }
         if (this.articles.command === 'ok'){
-          title = '您确定要直接发布这篇文章吗?'
-          message = '发布'
-          data.status = 0
+          this.save(data)
         }
         else if (this.articles.command === 'myself'){
           title = '您确定要将这篇文章转为私密文章吗?'
           message = '设成私密文章'
           data.status = 2
         }
-        else if (this.articles.command === 'history'){}
-        else if (this.articles.command === 'detail'){}
-        else if (this.articles.command === 'share'){}
-        else if (this.articles.command === 'move'){}
+        else if (this.articles.command === 'history'){
+          this.$router.push({path:'/articleHistory',query:{id:this.articles.id}})
+        }
+        else if (this.articles.command === 'detail'){
+          this.$router.push({path:'/articleDetail',query:{id:this.articles.id}})
+        }
+        else if (this.articles.command === 'share'){
+          Message.error("分享功能还在迭代开发中......")
+        }
+        else if (this.articles.command === 'move'){
+          Message.error("分享功能还在迭代开发中......")
+        }
         else if (this.articles.command === 'del') {
           title = '您确定要将这篇文章移到草稿箱吗?'
           data.status = 3
           message = '删除'
         }
-        if(data.status != undefined){
+        if(['del','myself'].includes(this.articles.command)){
           this.updateStatus(data,title).then(res=>{
-            let data = {
-              id: this.article.article_id,
-              backId: this.article.backId,
+            let updateArticleObj = {
+              article_id: res.id,
+              id: this.article.id,
               title: this.article.title,
               text: this.article.text,
               article_num: this.article.article_num,
-              status: data.status
+              status: res.status
             }
-            this.storeUpdateArticle(data,this.articles.command)
+            this.storeUpdateArticle(updateArticleObj,this.articles.command)
             Message.success(message+'成功！')
           }).catch(err=>{
             Message.error(message+'失败！')
@@ -355,7 +349,7 @@
             })
 
           }).catch(() => {
-            reject
+            reject()
           });
 
         })
@@ -365,7 +359,12 @@
     watch: {
       articles: function (cur,old) {
         if(!cur.command){
-          this.getArticleById();
+          if(cur.id){
+            this.isShow = false
+            this.getArticleById();
+          }else{
+            this.isShow = true
+          }
         }else {
           this.operation()
         }
@@ -378,8 +377,27 @@
     height: 100%;
     width: 100%;
     box-sizing: border-box;
-    padding-bottom: 65px;
     overflow: hidden;
+    position: relative;
+  }
+  .markdownBox{
+    height: 100%;
+    width: 100%;
+    padding-bottom: 65px;
+  }
+  .isNullTips{
+    background: #f2f2f2;
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    vertical-align: middle;
+    padding-top: calc(50% - 130px);
+  }
+  .isNullTips .tips{
+    color: #c5c3c3;
+    font-size: 64px;
+    font-weight: 800;
+    font-family: Kai, Kaiti SC, KaiTi, BiauKai, \\6977\4F53, \\6977\4F53_GB2312, Songti SC, serif;
   }
   .title{
     height: 65px;

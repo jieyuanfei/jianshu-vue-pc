@@ -102,12 +102,6 @@
     },
     created() {
       this.getTypeList();
-      let a = [1,2].map(info=>{
-        if(info === 2){
-          return info
-        }
-      })
-      console.log(a)
     },
     computed: {
       ...mapState({
@@ -284,7 +278,11 @@
         })
       },
       storeGetArticle(command = null) {
-        this.$store.dispatch('getArticle', { id:this.checkArticleInfo.id, backId:this.checkArticleInfo.backId, typeId: this.checkTypeInfo.id, command: command })
+        let getArticle = {}
+        if(this.checkArticleInfo.id){
+          getArticle = { id:this.checkArticleInfo.id, backId:this.checkArticleInfo.backId, typeId: this.checkTypeInfo.id, command: command }
+        }
+        this.$store.dispatch('getArticle', getArticle)
       }
     },
     watch: {
@@ -294,13 +292,26 @@
         }
       },
       articles:function (curVal, oldVal) {
-        if(!curVal.command && curVal.command == 'del'){
+        if(curVal.command != null && curVal.command == 'del'){
           this.articleList = this.articleList.filter(info=>{
             if(info.id === curVal.id){
               return false
             }
             return true;
           })
+          if(this.articleList.length === 0){
+            this.checkArticleInfo = {}
+          }else {
+            this.articleList = this.articleList.map((info,index)=>{
+              if(index === 0){
+                info.selected = true
+                this.checkArticleInfo = info
+              }else{
+                info.selected = false
+              }
+              return info;
+            })
+          }
         }else{
           this.articleList = this.articleList.map(info=>{
             if(info.id === curVal.id){
