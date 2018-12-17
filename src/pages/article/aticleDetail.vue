@@ -45,9 +45,9 @@
         </div>
         <div class="userMsg">
           <div class="box-top">
-            <img src="../../../static/img/author-hots1.jpg"/>
+            <img :src="user.header_url"/>
             <div class="context">
-              <div class="context-title">用户名</div>
+              <div class="context-title">{{user.username}}</div>
               <div class="context-text">写了 29407 字，被 2316 人关注，获得了 3021 个喜欢</div>
             </div>
             <a class="btn btn-success follow"><i class="el-icon-plus"></i><span>关注</span></a>
@@ -55,62 +55,133 @@
           <div class="box-bottom">99年小姐姐，目前大二，坐标南京. 爱好是音乐 写字 旅行 💤️ 最温情的段子手，最坦荡的标题党. 本性想做个女liu</div>
         </div>
         <div class="utils">
-          <el-button type="danger" plain><i class="el-icon-star-off"></i> 喜欢</el-button>
-          <el-button icon="el-icon-search" circle></el-button>
-          <el-button type="primary" icon="el-icon-edit" circle></el-button>
-          <el-button type="success" icon="el-icon-check" circle></el-button>
-          <el-button type="info" icon="el-icon-message" circle></el-button>
-          <el-button type="warning" icon="el-icon-star-off" circle></el-button>
+          <el-button type="danger" plain style="float: left"><i class="icon-ali-xihuan1"></i> 喜欢 | 13</el-button>
+          <el-tooltip class="item" effect="dark" content="分享到微信" placement="top">
+            <el-button icon="icon-ali-weixin" circle style="color: #00bb29"></el-button>
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" content="分享到微博" placement="top">
+            <el-button icon="icon-ali-weibo" circle style="color: #e05244"></el-button>
+          </el-tooltip>
+          <el-popover
+            placement="top"
+            trigger="hover">
+            <img src="../../../static/img/qrcode.png" width="150" height="150"/>
+            <el-button slot="reference" icon="icon-ali-tupian" circle></el-button>
+          </el-popover>
+          <el-dropdown trigger="click" placement="top">
+            <span class="el-dropdown-link">
+              <el-button round style="padding: 13px 23px">更多分享</el-button>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item><i class="icon-ali-unie652"></i> QQ</el-dropdown-item>
+              <el-dropdown-item><i class="icon-ali-twitter"></i> Twitter</el-dropdown-item>
+              <el-dropdown-item><i class="icon-ali-facebook"></i> Facebook</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
-        <div class="comment">
+        <div class="add-comment">
           <div class="comment-top">
             <img src="../../../static/img/hot1.jpg"/>
-            <textarea placeholder="写下您的评论....."></textarea>
+            <textarea placeholder="写下您的评论....." @focus="commentBut=true" v-model="commentInput" ></textarea>
           </div>
-          <div class="comment-bottom">
-            <el-button round>取消</el-button>
-            <el-button type="success" round>发送</el-button>
+          <div class="comment-bottom" v-show="commentBut">
+            <span><i class="icon-ali-bangzhu"></i> 字数:{{commentInput.length}}/500</span>
+            <el-button round @click="commentBut=false">取消</el-button>
+            <el-button type="success" round @click="addComment">发送</el-button>
           </div>
         </div>
         <div class="comment-list">
-          <div id="comment-31863101" class="comment">
-            <div>
-              <div class="author">
-                <div data-v-f3bf5228="" class="v-tooltip-container" style="z-index: 0;">
-                  <div class="v-tooltip-content"><a href="/u/2d545efe445e" target="_blank" class="avatar"><img
-                    src="//upload.jianshu.io/users/upload_avatars/15116775/d48db87f-e756-4579-83ad-eaee0da1eaf1?imageMogr2/auto-orient/strip|imageView2/1/w/114/h/114/format/webp"></a>
-                  </div> <!----></div>
-                <div class="info"><a href="/u/2d545efe445e" target="_blank" class="name">土拨鼠的呐喊</a> <!----> <!---->
-                  <div class="meta"><span>29楼 · 2018.12.07 17:33</span></div>
+          <div class="top-title">
+            <span>{{commentList.rows.length}}条评论</span>
+            <div class="pull-right">
+              <a class="active">按时间倒序</a>
+              <a class="">按时间正序</a>
+            </div>
+          </div>
+          <ul>
+            <li v-for="info in commentList.rows">
+              <div class="comment">
+                <div>
+                  <div class="author">
+                    <div class="v-tooltip-container" style="z-index: 0;">
+                      <div class="v-tooltip-content">
+                        <a @click.prevent target="_blank" class="avatar">
+                          <img :src="info.user_header_url">
+                        </a>
+                      </div>
+                    </div>
+                    <div class="info">
+                      <a @click.prevent target="_blank" class="name">{{info.user_name}}</a>
+                      <div class="meta"><span>时间: {{info.created_at}}</span></div>
+                    </div>
+                  </div>
+                  <div class="comment-wrap">
+                    <p>{{info.content}}</p>
+                    <div class="tool-group">
+                      <a @click.prevent @click="addCommentLoveNum(info.id,info.love_users)"  :class="{'like-button':true,'like-button-active':info.love_users}">
+                        <span v-if="info.love_num>0"><i class="icon-ali-iconfontzhizuobiaozhun44"></i>{{info.love_num}}人赞</span>
+                        <span v-if="info.love_num === 0"><i class="icon-ali-iconfontzhizuobiaozhun44"></i>赞</span>
+                      </a>
+                      <a @click.prevent @click="saveType(info,0)">
+                        <i class="icon-ali-duanxin"></i>
+                        <span>回复</span>
+                      </a>
+                      <a class="report"><span>举报</span></a>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="comment-wrap"><p>在这个快节奏的时代~ 真的外表很重要，大多数人基本没有太多的时间，或者说太多的机会想要去了解你的内在！ 始于颜值。</p>
-                <div class="tool-group">
-                  <a data-v-cdecbe24="" id="like-button-31863101" class="like-button">
-                    <span data-v-cdecbe24="">赞</span>
+              <div class="sub-comment-list" v-if="info.t_comment_replys && info.t_comment_replys.length>0">
+                <div class="sub-comment" v-for="reply in info.t_comment_replys">
+                  <div class="v-tooltip-container" style="z-index: 0;">
+                    <div class="v-tooltip-content">
+                      <a @click.prevent target="_blank">{{reply.from_user_name}}</a>
+                      <span>：</span>
+                    </div>
+                  </div>
+
+                  <span>
+                    <a @click.prevent class="maleskine-author" v-if="reply.to_user_name">@{{reply.to_user_name}}</a>
+                    <span>{{reply.content}}</span>
+                  </span>
+                  <div class="sub-tool-group">
+                    <span>{{reply.created_at}}</span>
+                    <a class="reply" @click.prevent @click="saveType(info,1,reply)">
+                      <i class="iconfont ic-comment"></i>
+                      <span>回复</span>
+                    </a>
+                  </div>
+                </div>
+                <div class="sub-comment more-comment">
+                  <a class="add-comment-btn" @click.prevent="saveType(info,0)">
+                    <i class="iconfont ic-subcomment"></i>
+                    <span>添加评论回复</span>
                   </a>
-                  <a class="">
-                    <i class="el-icon-tickets"></i>
-                    <span>回复</span>
-                  </a>
-                  <a class="report"><span>举报</span></a> <!----></div>
+                  <!--<span class="line-warp">还有2条评论，<a>展开查看</a></span>-->
+                </div>
               </div>
-            </div>
-            <div class="sub-comment-list"><div id="comment-29316238" class="sub-comment"><p><div data-v-f3bf5228="" class="v-tooltip-container" style="z-index: 0;"><div class="v-tooltip-content"><a href="/u/1b3ff6ac1ab3" target="_blank">云小木</a>：
-            </div> <!----></div> <span><a href="/u/c5e1d6cb9131" class="maleskine-author" target="_blank" data-user-slug="c5e1d6cb9131">@金泽城</a> 没错！</span></p> <div class="sub-tool-group"><span>2018.10.06 11:29</span> <a class=""><i class="iconfont ic-comment"></i> <span>回复</span></a> <a class="report"><span>举报</span></a> <!----></div></div><div id="comment-29521026" class="sub-comment"><p><div data-v-f3bf5228="" class="v-tooltip-container" style="z-index: 0;"><div class="v-tooltip-content"><a href="/u/42d17c7f191c" target="_blank">阿水哥哥</a>：
-            </div> <!----></div> <span><a href="/u/1b3ff6ac1ab3" class="maleskine-author" target="_blank" data-user-slug="1b3ff6ac1ab3">@云小木</a> ，你还年轻事物不能光看表面，出社会了你就知道现实是咋回事了，吐吐槽人之常情。</span></p> <div class="sub-tool-group"><span>2018.10.12 13:46</span> <a class=""><i class="iconfont ic-comment"></i> <span>回复</span></a> <a class="report"><span>举报</span></a> <!----></div></div><div id="comment-31478135" class="sub-comment"><p><div data-v-f3bf5228="" class="v-tooltip-container" style="z-index: 0;"><div class="v-tooltip-content"><a href="/u/f753ba4c84b2" target="_blank">一见你就笑_773b</a>：
-            </div> <!----></div> <span><a href="/u/42d17c7f191c" class="maleskine-author" target="_blank" data-user-slug="42d17c7f191c">@阿水哥哥</a> 是的  现实是很残酷的，美貌是会过期的</span></p> <div class="sub-tool-group"><span>2018.11.30 11:18</span> <a class=""><i class="iconfont ic-comment"></i> <span>回复</span></a> <a class="report"><span>举报</span></a> <!----></div></div> <div class="sub-comment more-comment"><a class="add-comment-btn"><i class="iconfont ic-subcomment"></i> <span>添加新评论</span></a> <span class="line-warp">
-          还有2条评论，
-          <a>展开查看</a></span> <!----> <!----></div> <!----></div>
-          </div>
+              <div class="add-comment" v-show="info.showEditBtn">
+                <div class="comment-top">
+                  <textarea placeholder="写下您的评论回复....." v-model="info.commentText" v-focus></textarea>
+                </div>
+                <div class="comment-bottom">
+                  <span><i class="icon-ali-bangzhu"></i> 字数:{{info.commentText.length}}/500</span>
+                  <el-button round @click="info.showEditBtn=false">取消</el-button>
+                  <el-button type="success" round @click="addCommentReply(info)">发送</el-button>
+                </div>
+              </div>
+            </li>
+          </ul>
+
         </div>
       </footer>
     </div>
   </div>
 </template>
 <script>
+  import {mapState} from 'vuex'
   import {mavonEditor} from 'mavon-editor'
-
+  import {Message} from 'element-ui'
   export default {
     components: {
       mavonEditor
@@ -122,14 +193,87 @@
         article: {},
         user: {},
         ul_style_padding: '45%',
+        commentInput: '',
+        commentBut: false,
+        commentList:{
+          limit:10,
+          offset:0,
+          rows:[]
+        },
       }
+    },
+    computed: {
+      ...mapState({
+        userInfo: state => state.Users.user
+      })
     },
     mounted() {
       this.id = this.$route.query.id
       this.fetchArticle(this.id)
       this.ul_style_padding = (this.$refs.ul_style.clientWidth - 3 * 35) / 2 + 15 + 'px'
+      this.getCommentList()
     },
     methods: {
+      getCommentList() {
+        console.log(this.userInfo)
+        this.$axios.get('getCommentListByArticleId',{params:{article_id:this.id, user_id: this.userInfo.uid}}).then(res=>{
+          this.commentList.rows = res.rows.map(item => {
+            item.showEditBtn = false;
+            item.commentText = '';
+            return item
+          })
+        }).catch(err=>{
+
+        })
+      },
+      addComment() {
+        this.$axios.post('addComment',{query:{article_id: this.id , content: this.commentInput }}).then(res=>{
+          res.data.showEditBtn = false
+          res.data.commentText = ''
+          this.commentInput = ''
+          this.commentBut = false
+          this.commentList.rows.unshift(res.data)
+          Message.success('评论成功')
+        }).catch(err=>{
+          Message.success('评论失败')
+        })
+      },
+      saveType(info,type,reply){
+        info.butType = type
+        if(type === 1){
+          info.reply = reply
+        }
+        info.showEditBtn = true;
+      },
+      addCommentReply(info) {
+        let query = {}
+        query.comment_id = info.id
+        query.content = info.commentText
+        if(info.butType === 1){
+          query.to_user_id = info.reply.from_user_id
+          query.to_user_name = info.reply.from_user_name
+          query.reply_id = info.reply.id
+        }
+
+        this.$axios.post('addCommentReply',{query: query}).then(res=>{
+          if(info.t_comment_replys&&info.t_comment_replys.length>0){
+            info.t_comment_replys.push(res.data)
+          }else {
+            info.t_comment_replys = [res.data]
+          }
+          info.showEditBtn = false
+          info.commentText = ''
+          Message.success('回复评论成功')
+        }).catch(err=>{
+          Message.success('回复评论失败')
+        })
+
+      },
+      addCommentLoveNum(id,love_users) {
+        this.$axios.post('addCommentLoveNum',{id:id}).then(res=>{
+          love_users = true;
+        }).catch(err=>{})
+      },
       fetchArticle(id) {
         this.$axios.get('getArticleDetailById', {params: {id: id}}).then(res => {
           this.article = res.article;
@@ -140,6 +284,11 @@
       scrollTop() {
         this.$refs.content.scrollTop = 0
       }
+    },
+    directives: {
+      focus: function (el) {
+        el.focus()
+      }
     }
   }
 </script>
@@ -148,13 +297,13 @@
     height: 100%;
     width: 100%;
     margin-left: 30px;
+
   }
 
   .content-box {
     margin-right: auto;
     margin-left: auto;
-    padding-left: 15px;
-    padding-right: 15px
+    padding: 0 15px 100px 15px;
   }
 
   .content-box:after, .content-box:before {
@@ -232,7 +381,7 @@
   }
 
   .meta span {
-    padding-left: 5px;
+    /*padding-left: 5px;*/
   }
 
   .btn-success {
@@ -367,6 +516,7 @@
 
   footer .utils {
     /*margin-bottom: 200px;*/
+    text-align: right;
     margin-bottom: 50px;
   }
 
@@ -380,7 +530,14 @@
     text-align: right;
   }
 
-  .comment textarea {
+  .comment-bottom span {
+    padding-left: 60px;
+    font-size: 13px;
+    color: #969696;
+    float: left;
+  }
+
+  .add-comment textarea {
     resize: none;
     flex: 1;
     margin-left: 15px;
@@ -396,7 +553,7 @@
     outline-style: none;
   }
 
-  .comment img {
+  .add-comment img {
     height: 45px;
     width: 45px;
     border-radius: 50%;
@@ -404,7 +561,7 @@
 
   .comment-list .comment {
     text-align: left;
-    padding: 20px 0 30px;
+    padding: 25px 0 10px;
     border-bottom: 1px solid #f0f0f0;
   }
 
@@ -445,16 +602,14 @@
     color: #969696;
   }
 
-  .comment-list .meta span {
-    margin-right: 6px;
-  }
+
 
   .comment-list .comment p {
     font-size: 16px;
   }
 
   .comment-list p {
-    margin: 10px 0;
+    margin: 10px 0 20px;
     line-height: 1.5;
     font-size: 16px;
     word-break: break-word !important;
@@ -463,62 +618,45 @@
 
   .comment-list .tool-group a {
     margin-right: 10px;
-    font-size: 0;
     color: #969696;
     display: inline-block;
-    position: relative;
-    padding-left: 23px;
+  }
+  .comment-list .tool-group .like-button-active{
+    color: #ea6f5a;
   }
 
+  .comment-list .tool-group .like-button:hover {
+    color: #ea6f5a;
+  }
   .comment-list .tool-group a span {
-    vertical-align: middle;
-    font-size: 14px;
-  }
-
-  .like-button[data-v-cdecbe24]:before {
-    content: '';
-    position: absolute;
-    left: -16px;
-    top: -16px;
-    width: 50px;
-    height: 50px;
-    background-image: url(//cdn2.jianshu.io/assets/web/zan_animation_steps-8d65a47….png);
-    background-position: left;
-    background-repeat: no-repeat;
-    background-size: 1050px 50px;
-  }
-
-  .comment-list .tool-group a {
-    margin-right: 10px;
-    font-size: 0;
-    color: #969696;
-    display: inline-block;
+    font-size: 15px;
   }
 
   .comment-list .comment-wrap .report {
     float: right;
-    margin: 12px 0 0 10px;
-    font-size: 0;
     color: #969696;
   }
 
-  .comment-list .sub-comment-list {
+  .comment-list .sub-comment-list,.comment-list li .add-comment {
+    text-align: left;
     margin-top: 20px;
     padding: 5px 0 5px 20px;
     border-left: 2px solid #d9d9d9;
+    font-size: 14px;
+  }
+  .comment-list li .add-comment .comment-bottom span{
+    padding-left: 10px;
+  }
+
+  .sub-comment-list a {
+    color: #3194d0;
+
   }
 
   .comment-list .sub-comment {
     margin-bottom: 15px;
     padding-bottom: 15px;
     border-bottom: 1px dashed #f0f0f0;
-  }
-
-  .comment-list .sub-comment-list p {
-    margin: 0 0 5px;
-    font-size: 14px;
-    line-height: 1.5;
-    word-break: break-word !important;
   }
 
   .v-tooltip-container {
@@ -532,17 +670,30 @@
   .comment-list .sub-tool-group {
     font-size: 12px;
     color: #969696;
-  }
-
-  .comment-list .sub-tool-group {
-    font-size: 12px;
-    color: #969696;
+    margin-top: 10px
   }
 
   .comment-list .sub-comment .report, .comment-list .sub-comment .subcomment-delete {
     float: right;
     margin: 1px 0 0 10px;
   }
+  .top-title{
+    text-align: left;
+    padding: 10px 0;
+    margin-top: 30px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .top-title span{
+    font-weight: 700;
+  }
+  .top-title .pull-right a{
+    font-size: 14px;
+    color: #969696;
+  }
+  .top-title .pull-right .active{
+    color: #2f2f2f;
+  }
+
 </style>
 <style>
   .markdown .v-show-content {

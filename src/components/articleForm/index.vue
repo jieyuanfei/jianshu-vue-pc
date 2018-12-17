@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="../../../../../简书图标/font_968556_gdheqsousxh/iconfont.css">
 <template>
   <div class="edit_div">
     <div class="markdownBox" v-if="!isShow">

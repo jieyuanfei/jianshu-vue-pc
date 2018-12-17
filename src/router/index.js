@@ -4,8 +4,8 @@ import Router from 'vue-router'
 import Home from '../pages/home.vue'
 import SignIn from '../pages/sign/signIn.vue'
 import SignUp from '../pages/sign/signUp.vue'
-import ArticleDetail from '../pages/article/AticleDetail'
-const WriteArticle = (resolve)=> require(['../pages/article/writeArticle.vue'],resolve);
+import ArticleDetail from '../pages/article/aticleDetail'
+const ArticleWrite = (resolve)=> require(['../pages/article/articleWrite.vue'],resolve);
 const ArticleHistory = (resolve)=> require(['../pages/article/articleHistory.vue'],resolve);
 const Download = (resolve)=> require([ '../pages/download'],resolve);
 const Author = (resolve)=> require(['../pages/author'],resolve);
@@ -34,12 +34,12 @@ const router = new Router({
       component:SignUp
     },
     {
-      path:'/writeArticle',
-      name:'writeArticle',
+      path:'/articleWrite',
+      name:'articleWrite',
       meta:{
         requireAuth: false
       },
-      component:WriteArticle
+      component:ArticleWrite
     },
     {
       path:'/articleHistory',

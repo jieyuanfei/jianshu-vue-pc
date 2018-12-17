@@ -33,13 +33,13 @@
     },
     mounted() {
       let path = this.$route.path;
-      if (path === '/signIn' || path === '/signUp' || path === '/writeArticle') {
+      if (path === '/signIn' || path === '/signUp' || path === '/articleWrite') {
         this.display = false
       }
     },
     watch: {
       $route(to, from) {
-        if (to.path === '/signIn' || to.path === '/signUp' || to.path === '/writeArticle') {
+        if (to.path === '/signIn' || to.path === '/signUp' || to.path === '/articleWrite') {
           this.display = false;
         } else {
           this.display = true;
@@ -48,10 +48,12 @@
     }
   }
 </script>
-
 <style>
 
+</style>
+<style>
 
+  @import './assets/icon/iconfont.css';
   @import '../static/style.css';
   @import '../static/index.css';
 

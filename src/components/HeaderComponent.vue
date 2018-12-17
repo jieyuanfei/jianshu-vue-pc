@@ -1,7 +1,7 @@
 <template>
   <div class="header-component">
     <router-link to="/" class="header-logo"><img src="../../static/img/logo.png"/></router-link>
-    <router-link to="/writeArticle" class="btn write-btn"><i class="iconfont ic-write"></i>写文章</router-link>
+    <router-link to="/articleWrite" class="btn write-btn"><i class="iconfont ic-write"></i>写文章</router-link>
     <router-link to="/signUp" class="btn sign-up" v-if="!navShow">注册</router-link>
     <router-link to="/signIn" class="btn log-in" v-if="!navShow">登录</router-link>
     <span class="btn log-in userInfo" v-if="navShow">
@@ -10,14 +10,14 @@
           <img :src="user.header_url"/><i class="el-icon-caret-bottom updown"></i>
         </span>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item><i class="el-icon-service orange"></i> 我的主页</el-dropdown-item>
-          <el-dropdown-item><i class="el-icon-star-off orange"></i> 收藏的文章</el-dropdown-item>
-          <el-dropdown-item><i class="el-icon-view orange"></i> 喜欢的文章</el-dropdown-item>
-          <el-dropdown-item><i class="el-icon-sold-out orange"></i> 已购内容</el-dropdown-item>
-          <el-dropdown-item><i class="el-icon-goods orange"></i> 我的钱包</el-dropdown-item>
-          <el-dropdown-item><i class="el-icon-setting orange"></i> 设置</el-dropdown-item>
-          <el-dropdown-item><i class="el-icon-question orange"></i> 帮助反馈</el-dropdown-item>
-          <el-dropdown-item command="logout"><i class="el-icon-back orange"></i> 退出</el-dropdown-item>
+          <el-dropdown-item><i class="icon-ali-geren orange"></i> 我的主页</el-dropdown-item>
+          <el-dropdown-item><i class="icon-ali-shoucang orange"></i> 收藏的文章</el-dropdown-item>
+          <el-dropdown-item><i class="icon-ali-xihuan orange"></i> 喜欢的文章</el-dropdown-item>
+          <el-dropdown-item><i class="icon-ali-renminbi orange"></i> 已购内容</el-dropdown-item>
+          <el-dropdown-item><i class="icon-ali-qianbao orange"></i> 我的钱包</el-dropdown-item>
+          <el-dropdown-item><i class="icon-ali-shezhi orange"></i> 设置</el-dropdown-item>
+          <el-dropdown-item><i class="icon-ali-bangzhu orange"></i> 帮助反馈</el-dropdown-item>
+          <el-dropdown-item command="logout"><i class="icon-ali-logout orange"></i> 退出</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
      </span>
@@ -51,14 +51,13 @@
                 <span class="menu-text">消息</span>
               </el-badge>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item><i class="el-icon-service orange"></i> 我的主页</el-dropdown-item>
-                <el-dropdown-item><i class="el-icon-star-off orange"></i> 收藏的文章</el-dropdown-item>
-                <el-dropdown-item><i class="el-icon-view orange"></i> 喜欢的文章</el-dropdown-item>
-                <el-dropdown-item><i class="el-icon-sold-out orange"></i> 已购内容</el-dropdown-item>
-                <el-dropdown-item><i class="el-icon-goods orange"></i> 我的钱包</el-dropdown-item>
-                <el-dropdown-item><i class="el-icon-setting orange"></i> 设置</el-dropdown-item>
-                <el-dropdown-item><i class="el-icon-question orange"></i> 帮助反馈</el-dropdown-item>
-                <el-dropdown-item command="logout"><i class="el-icon-back orange"></i> 退出</el-dropdown-item>
+                <el-dropdown-item><i class="icon-ali-pinglun orange"></i> 评论</el-dropdown-item>
+                <el-dropdown-item><i class="icon-ali-duanxin orange"></i> 简信</el-dropdown-item>
+                <el-dropdown-item><i class="icon-ali-shangchuan orange"></i> 投稿请求</el-dropdown-item>
+                <el-dropdown-item><i class="icon-ali-xihuan orange"></i> 喜欢和赞</el-dropdown-item>
+                <el-dropdown-item><i class="icon-ali-yiguanzhu orange"></i> 关注</el-dropdown-item>
+                <el-dropdown-item><i class="icon-ali-renminbi orange"></i> 奖赏和付费</el-dropdown-item>
+                <el-dropdown-item><i class="icon-ali-qita orange"></i> 更多</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </router-link>
@@ -399,7 +398,7 @@
 
   .orange {
     margin-right: 10px;
-    font-size: 18px;
+    font-size: 20px;
     color: #ea6f5a;
   }
 
