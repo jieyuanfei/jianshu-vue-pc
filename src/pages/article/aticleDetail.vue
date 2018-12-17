@@ -118,7 +118,7 @@
                   <div class="comment-wrap">
                     <p>{{info.content}}</p>
                     <div class="tool-group">
-                      <a @click.prevent @click="addCommentLoveNum(info.id,info.love_users)"  :class="{'like-button':true,'like-button-active':info.love_users}">
+                      <a @click.prevent @click="addCommentLoveNum(info.id,info.loveId)"  :class="{'like-button':true,'like-button-active':info.loveId!=null}">
                         <span v-if="info.love_num>0"><i class="icon-ali-iconfontzhizuobiaozhun44"></i>{{info.love_num}}人赞</span>
                         <span v-if="info.love_num === 0"><i class="icon-ali-iconfontzhizuobiaozhun44"></i>赞</span>
                       </a>
@@ -269,9 +269,20 @@
         })
 
       },
-      addCommentLoveNum(id,love_users) {
-        this.$axios.post('addCommentLoveNum',{id:id}).then(res=>{
-          love_users = true;
+      addCommentLoveNum(id,loveId) {
+        this.$axios.post('addCommentLoveNum',{id:id, loveId:loveId}).then(res=>{
+          this.commentList.rows = this.commentList.rows.map(info => {
+            if(info.id === id){
+              if(res.num > 0){
+                info.loveId = res.id;
+                info.love_num = info.love_num + 1
+              }else{
+                info.loveId = null
+                info.love_num = info.love_num - 1
+              }
+            }
+            return info
+          })
         }).catch(err=>{})
       },
       fetchArticle(id) {
