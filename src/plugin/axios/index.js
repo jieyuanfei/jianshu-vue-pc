@@ -4,9 +4,7 @@ import axios from 'axios'
 import Cookies from 'js-cookie'
 import $router from '../../router'
 let loading = null
-if (process.env.NODE_ENV === 'development') {
-  axios.defaults.baseURL = '/api/'
-}
+axios.defaults.baseURL = '/api/'
 axios.defaults.headers.Authorization = localStorage['token'] || null
 axios.interceptors.request.use(function (config) {
   // Do something before request is sent

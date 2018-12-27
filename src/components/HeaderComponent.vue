@@ -1,6 +1,6 @@
 <template>
   <div class="header-component">
-    <router-link to="/" class="header-logo"><img src="../../static/img/logo.png"/></router-link>
+    <router-link to="/" class="header-logo"><img src="../assets/img/logo.png"/></router-link>
     <router-link to="/articleWrite" class="btn write-btn"><i class="iconfont ic-write"></i>写文章</router-link>
     <router-link to="/signUp" class="btn sign-up" v-if="!navShow">注册</router-link>
     <router-link to="/signIn" class="btn log-in" v-if="!navShow">登录</router-link>

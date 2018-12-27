@@ -1,6 +1,6 @@
 <template>
   <div class="sign">
-    <div class="logo"><a href="/"><img src="../../../static/img/logo.png" alt="LOGO"></a></div>
+    <div class="logo"><a href="/"><img src="../../assets/img/logo.png" alt="LOGO"></a></div>
     <div class="main">
       <h4 class="title">
         <div class="normal-title">

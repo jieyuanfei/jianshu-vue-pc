@@ -29,9 +29,9 @@
             <el-button type="danger" round>赞赏支持</el-button>
           </div>
           <ul :style="{'padding-left': ul_style_padding}" ref="ul_style">
-            <li><img src="../../../static/img/hot1.jpg"/></li>
-            <li><img src="../../../static/img/hot2.jpg"/></li>
-            <li><img src="../../../static/img/hot3.jpg"/></li>
+            <li><img src="../../assets/img/hot1.jpg"/></li>
+            <li><img src="../../assets/img/hot2.jpg"/></li>
+            <li><img src="../../assets/img/hot3.jpg"/></li>
           </ul>
         </div>
         <div class="text-type">
@@ -65,7 +65,7 @@
           <el-popover
             placement="top"
             trigger="hover">
-            <img src="../../../static/img/qrcode.png" width="150" height="150"/>
+            <img src="../../assets/img/qrcode.png" width="150" height="150"/>
             <el-button slot="reference" icon="icon-ali-tupian" circle></el-button>
           </el-popover>
           <el-dropdown trigger="click" placement="top">
@@ -81,7 +81,7 @@
         </div>
         <div class="add-comment">
           <div class="comment-top">
-            <img src="../../../static/img/hot1.jpg"/>
+            <img src="../../assets/img/hot1.jpg"/>
             <textarea placeholder="写下您的评论....." @focus="commentBut=true" v-model="commentInput" ></textarea>
           </div>
           <div class="comment-bottom" v-show="commentBut">

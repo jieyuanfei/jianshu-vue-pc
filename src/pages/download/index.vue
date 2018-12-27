@@ -2,16 +2,16 @@
   <div class="download">
     <div class="container top-part">
       <div class="top-logo">
-        <img class="logo" src="../../../static/img/download-logo.png" alt="Misc logo">
+        <img class="logo" src="../../assets/img/download-logo.png" alt="Misc logo">
         <div class="info">
           <div class="title">创作你的创作</div>
           <div class="slogan">一个优质创作社区</div>
         </div>
       </div>
-      <img class="background-img" src="../../../static/img/download-bg.png" alt="Misc background">
-      <img class="phone-img" src="../../../static/img/phone.png" alt="Misc phone">
+      <img class="background-img" src="../../assets/img/download-bg.png" alt="Misc background">
+      <img class="phone-img" src="../../assets/img/phone.png" alt="Misc phone">
       <div class="top-qrcode">
-        <img src="../../../static/img/qrcode.png" alt="Download apps page top qrcode">
+        <img src="../../assets/img/qrcode.png" alt="Download apps page top qrcode">
         <div class="title">扫码下载简书App</div>
         <div class="description">随时随地发现和创作内容</div>
       </div>
